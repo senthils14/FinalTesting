@@ -1,0 +1,29 @@
+openstack  & Rack space
+
+Create Heroku account from heroku.com
+Install Heroku-Toolbelt and lanch the command line tool
+login to Heoru, 
+	C:\Users\senthil.subramani\> heroku login
+	Enter your Heroku credentials.
+	Email: zeke@example.com
+	Password:
+	Authentication successful.
+Create a App
+	C:\Users\senthil.subramani\> git clone https://github.com/heroku/node-js-getting-started.git
+	C:\Users\senthil.subramani\> cd node-js-getting-started
+Deploy the app on Heroku
+	C:\Users\senthil.subramani\node-js-getting-started>heroku create
+	Creating afternoon-beach-2964... done, stack is cedar-14
+	https://afternoon-beach-2964.herokuapp.com/ | https://git.heroku.com/afternoon-beach-2964.git
+	Git remote heroku added	
+Destroy the App in Heroku
+	C:\Users\senthil.subramani\node-js-getting-started>heroku apps:destroy --app example	
+View Logs
+	C:\Users\senthil.subramani\node-js-getting-started>heroku logs --tail
+Deploy Chnages
+	$ git add .
+	$ git commit -m "Demo"
+	$ git push heroku master
+	$ heroku open
+
+	
