@@ -1,1 +1,2 @@
 I am New file created from command line
+I am New file created from command line
