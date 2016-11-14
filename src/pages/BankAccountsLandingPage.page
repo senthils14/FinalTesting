@@ -1,0 +1,410 @@
+<apex:page controller="BankAcctLandingController" docType="html-5.0" showHeader="false" sidebar="false" cache="false" 
+standardStylesheets="false"  language="en-US" id="pgid" action="{!init}">
+
+<!--Adding the SessionTimeout component for Defect#114172-->
+<c:SessionTimeout isHonda="{!Honda}"/>
+
+<apex:form id="frm">
+
+<html>
+<head>
+    <meta name="viewport" content="width=640"/>
+ <apex:outputpanel rendered="{!Honda}">
+ <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/css/style.css')}"/>
+ </apex:outputpanel>
+ <apex:outputpanel rendered="{!Not(Honda)}">
+ <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/css/acura-style.css')}"/>
+ </apex:outputpanel>
+ <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/css/common.css')}"/>
+ <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images')}"/>
+ <apex:includeScript value="{!URLFOR($Resource.Honda_Style_JS, 'Honda_Style_JS/js/jquery-1.8.2.min.js')}"  />
+ <apex:includescript value="{!URLFOR($Resource.TrackingJS, 'AppMeasurement_JavaScript-1.5.2/VisitorAPI.js')}"/>
+ <apex:includescript value="{!URLFOR($Resource.TrackingJS, 'AppMeasurement_JavaScript-1.5.2/AppMeasurement.js')}"/>
+  
+ <style type="text/css">
+    .custPopup{background-color: white;border-width: 2px;border-style: solid;z-index: 9999;left: 50%;padding:10px;position: absolute;
+    /* These are the 3 css properties you will need to change so the popup 
+    displays in the center of the screen. First set the width. Then set 
+    margin-left to negative half of what the width is. You can add 
+    the height property for a fixed size pop up if you want.*/
+    width: 500px;
+    margin-left: -250px;
+    top:100px;
+    }
+    .popupBackground{
+    background-color:black;opacity: 0.20;filter: alpha(opacity = 20);position: absolute;width: 100%;height: 100%;left: 0;z-index: 9998;}
+    
+    .overlay-layer{
+   
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: #000000;
+            opacity: .15;
+            filter: alpha(opacity=15);
+            -moz-opacity: .15;
+            z-index: 10;
+            
+         
+
+    }
+    
+</style>
+<script type="text/javascript">
+ 
+    $j = jQuery.noConflict();
+    $j(document).ready(function() {
+    $j("input[type='radio']").change(function () {
+    var selection=$j('input[type=radio][name=sex]:checked').attr('id');
+    Updateprefer(selection);
+    return false;
+    });}); 
+    function UpdatePreferJS()
+    {
+        var selection=$j('input[type=radio][name=sex]:checked').attr('id');
+        Updateprefer(selection);
+        return false;
+    }
+    function sendupdate(index1,bankid){
+    var error = 'Error: ';
+             
+        if(document.getElementById(nameid) != null){
+        var bankname = document.getElementById(nameid).value; 
+        }
+        
+        if(document.getElementById(nameid) != null){
+        if(bankname.length == 0){
+        error +=  ('<br>Enter your bank name.');
+        }
+        }
+        
+        if(error!='Error: '){
+        document.getElementById("errors").innerHTML = error;
+        return false;
+          }
+    var namestr = nameid.replace(nameid.charAt(nameid.lastIndexOf(":")-1),index1);
+    var nicknamestr = nicknameid.replace(nameid.charAt(nameid.lastIndexOf(":")-1),index1);
+    var banktype = banktypeid.replace(nameid.charAt(nameid.lastIndexOf(":")-1),index1);
+    //sending the value to controller using actionfunction
+    UpdateBankAcc(document.getElementById(namestr).value,document.getElementById(nicknamestr).value,bankid,document.getElementById(banktype).value);
+    return false;
+    }
+
+    function Updateprefer(selectedcheck){
+    alert("false");
+       return false;
+    }
+    
+    function validateBankName(){
+        var error = 'Error: ';
+             
+        if(document.getElementById(nameid) != null){
+        var bankname = document.getElementById(nameid).value; 
+        }
+        
+        if(document.getElementById(nameid) != null){
+        if(bankname.length == 0){
+        error +=  ('<br>Enter your bank name.');
+        }
+        }
+        
+        if(error!='Error: '){
+        document.getElementById("errors").innerHTML = error;
+        return false;
+          }
+        return true;
+       }
+</script>
+
+</head>
+
+<body>          
+         
+<script language="JavaScript" type="text/javascript">
+            /* You may give each page an identifying name, server, and channel on
+            the next lines. */
+            s.pageName="BankAccountsLandingPage"
+            s.server=""
+            s.channel=""
+            s.pageType=""
+            s.prop1=""
+            s.prop2=""
+            s.prop3=""
+            s.prop4=""
+            s.prop5=""
+            /* Conversion Variables */
+            s.campaign=""
+            s.state=""
+            s.zip=""
+            s.events=""
+            s.products=""
+            s.purchaseID=""
+            s.eVar1=""
+            s.eVar2=""
+            s.eVar3=""
+            s.eVar4=""
+            s.eVar5=""
+            var s_code=s.t();if(s_code)document.write(s_code);
+        </script>
+<div class="overlay"></div>
+
+<apex:outputPanel id="jsPanel">
+    <script>
+      function popWinClose()
+      {
+        //setTimeout(window.close, 1000);
+        //window.open('','_self',''); 
+        window.close();
+        //return false;
+      }
+    </script>
+</apex:outputPanel>
+
+<!--This actionfunction call is for updating the preferece in bankaccount by clicking radio button-->
+<apex:actionfunction name="Updateprefer" action="{!Updatepreferredbank}" rerender="msg,bankdet">
+<apex:param name="bankid" value=""/>
+</apex:actionfunction>
+
+<!--This actionfunction call is for updating the name,nickname in bankaccount-->
+<apex:actionfunction name="UpdateBankAcc" action="{!Save}" rerender="msg,bankdet">
+<apex:param name="param1" value=""/>
+<apex:param name="param2" value=""/>
+<apex:param name="param3" value=""/>
+<apex:param name="param4" value=""/>
+
+</apex:actionfunction>
+
+ <!-- Start Cancel Request -->
+ <apex:actionfunction name="cancelPage_JS" action="{!checkDevice}" oncomplete="{!If(mobile==false,'redirectToHFS_JS();','popWinClose()')}"/>
+ <apex:actionfunction action="{!redirectToHFS}" name="redirectToHFS_JS" />
+ <!-- End Cancel Request -->
+
+ <title>Bank Accounts Landing</title>
+ 
+ 
+ <div class="middle-col bank-acc-landing-page">
+
+    <div class="middle-title">
+       <apex:outputPanel id="msg" style="color:red;font-weight:bold;font-size:22px"><apex:pagemessages showDetail="false"></apex:pagemessages></apex:outputPanel>
+       <apex:outputpanel id="acoverview">
+       <apex:outputPanel rendered="{!Honda}">
+        <apex:outputpanel rendered="{!rename}"><p><apex:commandlink action="{!accountoverview}" rerender="accountoverview"><span>Account Overview</span></apex:commandlink> <apex:commandlink action="{!accountoverview}" rerender="accountoverview"><apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/></apex:commandlink></p></apex:outputpanel>
+        <apex:outputpanel rendered="{!Not(rename)}"><p><apex:commandlink action="{!accountoverview}" onclick="{window.top.location={!$Label.AccountOverviewURL}; return false;}" ><span>Account Overview</span></apex:commandlink> <apex:commandlink action="{!accountoverview}" onclick="{window.top.location={!$Label.AccountOverviewURL}; return false;}"><apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/></apex:commandlink></p></apex:outputpanel>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!Not(Honda)}">
+        <apex:outputpanel rendered="{!rename}"><p><apex:commandlink action="{!accountoverview}" rerender="accountoverview"><span>Account Overview</span></apex:commandlink> <apex:commandlink action="{!accountoverview}" rerender="accountoverview"><apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/></apex:commandlink></p></apex:outputpanel>
+        <apex:outputpanel rendered="{!Not(rename)}"><p><apex:commandlink action="{!accountoverview}" onclick="{window.top.location={!$Label.Accura_Account_Overview_URL}; return false;}" ><span>Account Overview</span></apex:commandlink> <apex:commandlink action="{!accountoverview}" onclick="{window.top.location={!$Label.Accura_Account_Overview_URL}; return false;}"><apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/></apex:commandlink></p></apex:outputpanel>
+        </apex:outputPanel>
+       
+        
+       </apex:outputpanel>
+        <h1>Manage Bank Accounts</h1>
+    
+    </div>
+    <div class="note-info">
+        <p>Note:There is a limit of four bank accounts that can be associated with this finance account.</p>
+    </div>
+    
+    <section>
+    <apex:outputpanel id="bankdet3">    
+    <apex:outputpanel id="bankdet">
+    <apex:variable var="index" value="{!0}"/>
+    <apex:repeat value="{!paymentSource}" var="pso">
+    <div class="acc-list" >
+     
+        <div class="list-col-1" id="bankdet1">
+            <div class="disabled-fld">
+            <apex:outputpanel rendered="{!if(selected!=pso.id,true,false)}">
+                <p class="rename_fld"><apex:outputtext value="{!pso.Bank_Name__c}" /></p>
+                <p class="rename_fld"><apex:outputtext value="{!pso.Payment_Source_Nickname__c}"/></p>
+                <!--changed made for defect# 113209-->
+                <p>XXXX-<apex:outputtext value="{!pso.Last_4__c}"/></p>
+                
+            </apex:outputpanel>
+            </div>  
+            <!-- changed for showing error message on bank account name field-->
+            <div id="editable">
+            <apex:outputpanel rendered="{!if(selected==pso.id,true,false)}">
+            
+                <div id="errors" style='color:red; font-size:14px;'>
+                          
+                 <apex:pageMessages ></apex:pageMessages>
+                </div>
+                <apex:inputHidden value="{!pso.Bank_Account_Type__c}" id="banktype"/>
+                <!--changes added for defect # 112530-->
+                <!--<apex:inputtext styleclass="medium-input" value="{!pso.Bank_Name__c}" rendered="{!if(selected==pso.id,true,false)}" id="name1" />-->
+                <apex:inputtext styleclass="medium-input" value="{!pso.Bank_Name__c}" rendered="{!if(selected==pso.id,true,false)}" id="name1" onblur="return validateBankName()" />
+                <apex:inputtext styleclass="medium-input" value="{!pso.Payment_Source_Nickname__c}" rendered="{!if(selected==pso.id,true,false)}" id="nickname"/>
+                 <apex:outputtext value="XXXX-{!pso.Last_4__c}" rendered="{!if(selected==pso.id,true,false)}" />
+              <script>
+              var nameid = '{!$Component.name1}';
+              var nicknameid = '{!$Component.nickname}';
+              var banktypeid = '{!$Component.banktype}';
+              </script>
+              </apex:outputpanel>
+            </div>  
+        </div>
+        
+   
+        <div class="list-col-2">
+            <div class="rename-btn-section">
+              
+                    <p><apex:commandbutton value="Rename" action="{!Rename}" rerender="bankdet,acoverview" rendered="{!if(selected!=pso.id,true,false)}" styleclass="primary-btn btn-3 rename-btn"><apex:param name="bankaccid" value="{!pso.id}"/></apex:commandbutton></p>
+                    <p><apex:commandbutton value="Delete"  action="{!showPopup}" onclick="ovelayPop();" styleclass="js-open-modal regular-btn btn-3" rendered="{!if(selected!=pso.id,true,false)}" rerender="bankdet,tstpopup"><apex:param name="bankaccid" value="{!pso.id}"/></apex:commandbutton></p>
+                    
+                    <apex:outputPanel rendered="{!!csat}" >
+                      <p>  <apex:commandbutton value="Save"  styleclass="primary-btn btn-3 active" rendered="{!if(selected==pso.id,true,false)}"  onclick="sendupdate('{!index}','{!pso.id}');return false;" disabled="{!csat}" >
+                       </apex:commandbutton></p>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!csat}" >
+                      <p>  <apex:commandbutton value="Save"  styleclass="disabledbtn" rendered="{!if(selected==pso.id,true,false)}"  onclick="sendupdate('{!index}','{!pso.id}');return false;" disabled="{!csat}" >
+                       </apex:commandbutton></p>  <p></p>
+                    </apex:outputPanel>
+                    
+                    
+                    <p><apex:commandbutton value="Cancel" action="{!Cancel}" styleclass="regular-btn btn-3" rendered="{!if(selected==pso.id,true,false)}" rerender="bankdet3" /></p>
+               
+                
+            </div>
+            
+        </div>
+         <!-- DEFECT 114062: - Disable Radio Buttons for CSAT Users - veera -->
+        <div class="list-col-3">
+        <apex:outputPanel rendered="{!!csat}" > 
+        <apex:outputpanel rendered="{!if(pso.Preferred_Payment_Source__c==true,true,false)}">
+                  <p><b>Preferred</b><input type="radio"  name="sex" checked="true" id="{!pso.id}" /></p>
+        </apex:outputpanel>
+        <apex:outputpanel rendered="{!if(pso.Preferred_Payment_Source__c!=true,true,false)}">
+                  <p><b>Preferred</b><input type="radio" name="sex" onchange="UpdatePreferJS();return false;"   id="{!pso.id}" /></p>
+        </apex:outputpanel>
+         </apex:outputpanel>
+                <apex:outputPanel rendered="{!csat}" >
+            <apex:outputpanel rendered="{!if(pso.Preferred_Payment_Source__c==true,true,false)}">
+                      <p><b>Preferred</b><input type="radio"  name="sex" checked="true" id="{!pso.id}"  /></p>
+            </apex:outputpanel>
+            <apex:outputpanel rendered="{!if(pso.Preferred_Payment_Source__c!=true,true,false)}">
+                      <p><b>Preferred</b><input type="radio" name="sex" onchange="UpdatePreferJS();return false;"  disabled="true" id="{!pso.id}" /></p>
+            </apex:outputpanel>
+        </apex:outputPanel>
+        </div>
+    </div>
+    <apex:variable var="index" value="{!index+1}"/>
+    </apex:repeat>  
+    </apex:outputpanel>
+    </apex:outputpanel>
+    <!-- Account List End -->
+    </section>
+    
+    <div class="new-bank-acc">
+        <p><span class="plus-icon">+</span><apex:commandbutton value="New Bank Account" action="{!newbankaccount}" styleclass="{!buttonStyle}" id="newbank" disabled="{!disablenewbutton}"/></p>
+    </div>
+    
+    <!--Account Overview Popup Start-->
+    <apex:outputpanel id="accountoverview">
+    <apex:outputpanel style="display:block; top:13%; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;" layout="block"  rendered="{!accountoverview}">
+    <div class="window-size-two" id="delete-pop">
+    <h3>Go to Account Overview?</h3>
+    <div class="pop-up-details">
+        <p class="window-msg">You will now be directed to your Account Overview page. By allowing this, all of the information that you have entered will be lost. Are you sure you want to proceed?</p>
+    <div class="pop-btn-section"> 
+        <label><apex:commandbutton value="No" action="{!CancelaccOverivew}" styleclass="regular-btn btn-3 js-modal-close close"  rerender="accountoverview"/></label>
+        <label><apex:commandbutton value="Yes" rerender="msg,bankdet,tstpopup" styleclass="regular-btn btn-3" action="{!doNothingMethod}" onclick="cancelPage_JS();return false;" rendered="{!Honda}"></apex:commandbutton>
+        <apex:commandbutton value="Yes" rerender="msg,bankdet,tstpopup" styleclass="regular-btn btn-3" onclick="{window.top.location={!$Label.Accura_Account_Overview_URL}; return false;}" rendered="{!!Honda}"></apex:commandbutton></label>
+         
+    </div>
+    </div>
+    </div>
+    </apex:outputpanel>
+    </apex:outputpanel>
+    <!--Account Overview Popup End-->
+
+    
+    <apex:outputPanel id="tstpopup">
+    <!--<apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!displayPopUp}"/>-->
+    <apex:outputPanel style="display:block; top:10%;; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;"  layout="block" rendered="{!displayPopUpDelete}">
+    <div class="window-size-two" id="delete-pop">
+        <h3>Delete Bank Account?</h3>
+        <div class="pop-up-details">
+            <p class="window-msg">Are you sure you want to delete the following bank account?</p>            
+            <ul>
+                <li><label>Bank Name</label> <span>{!deletepopuppaymentsource.Bank_Name__c}</span></li>
+                <li><label>Bank Account Nickname </label><span>{!deletepopuppaymentsource.Payment_Source_Nickname__c}</span></li>
+                <li><label>Bank Account Number </label><span>XXXX-{!deletepopuppaymentsource.Last_4__c}</span></li>             
+            </ul>
+        <!-- DEFECT 114062: - Disable 'Yes,Delete' Button for CSAT Users - veera -->
+            <div class="pop-btn-section"> 
+                <apex:outputPanel rendered="{!csat}" >
+                <label><apex:commandbutton value="No, Cancel" action="{!Canceldeletefn}" oncomplete="removeovelayPop();" styleclass="regular-btn btn-3 js-modal-close close"  rerender="bankdet"/></label>
+                <label><apex:commandbutton action="{!delete1}" value="Yes, Delete" disabled="{!csat}" oncomplete="removeovelayPop();" rerender="msg,bankdet,tstpopup,newbank" styleclass="disabledbtn"></apex:commandbutton></label>
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!!csat}" >
+                <label><apex:commandbutton value="No, Cancel" action="{!Canceldeletefn}" oncomplete="removeovelayPop();" styleclass="regular-btn btn-3 js-modal-close close"  rerender="bankdet"/></label>
+                <label><apex:commandbutton action="{!delete1}" value="Yes, Delete" disabled="{!csat}" oncomplete="removeovelayPop();" rerender="msg,bankdet,tstpopup,newbank" styleclass="primary-btn btn-3"></apex:commandbutton></label>
+                </apex:outputPanel>
+            </div>        
+        </div>
+    </div>
+    </apex:outputPanel>
+    <!-- Pop up End -->
+    
+     <apex:outputPanel style="display:block; top:10%;; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;"  layout="block" rendered="{!displayPopUpUndelete}">
+         <div class="window-size-two unable-to-delete-popup" id="delete-pop">
+    <h3>Unable to Delete Bank Account</h3>
+    <div class="pop-up-details">
+        <p class="window-msg">The following bank account is currently associated with a number of pending payments:</p>        
+        <ul>
+            <li><label>Bank Name</label> <span>{!deletepopuppaymentsource.Bank_Name__c}</span></li>
+            <li><label>Bank Account Nickname </label><span>{!deletepopuppaymentsource.Payment_Source_Nickname__c}</span></li>
+            <li><label>Bank Account Number </label><span>XXXX-{!deletepopuppaymentsource.Last_4__c}</span></li>    
+        </ul>
+        <p class="window-msg">Click on "Go to Pending Payments" to update payments before deleting this bank account.</p>
+
+        <div class="pop-btn-section pending-btn">
+            <label><apex:commandbutton action="{!Cancel}" value="Cancel" oncomplete="removeovelayPop();" rerender="msg,bankdet,tstpopup" styleclass="regular-btn btn-3"></apex:commandbutton></label> 
+            <label><apex:commandbutton action="{!Delete2}" value="Go to pending payments" onclick="{window.location='/apex/Pendingpayment?finnumber={!$CurrentPage.parameters.finnumber}&isReadOnly={!$CurrentPage.parameters.isReadOnly}'; return false;}" rerender="msg,bankdet,tstpopup" styleclass="primary-btn btn-3"/></label> 
+        </div>
+    
+      </div>
+    </div>
+    </apex:outputPanel>
+        <!-- Pop up End -->
+        
+        
+        
+    </apex:outputpanel>
+    </div>
+
+<script>
+
+     function ovelayPop(){
+    
+        var pj = jQuery.noConflict();    
+        pj(document).ready(function() {
+        pj('.overlay ').addClass('overlay-layer');
+
+ });
+ }  
+ 
+ function removeovelayPop(){
+        var pj = jQuery.noConflict();    
+        pj(document).ready(function() {
+         pj('.overlay').removeClass('overlay-layer');
+    
+ });
+ }    
+</script>
+
+
+
+</body>
+</html>
+
+</apex:form>
+</apex:page>

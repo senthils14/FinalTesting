@@ -1,0 +1,126 @@
+<apex:page standardController="ChargentOrders__ChargentOrder__c"    extensions="StdOTPController" Showheader="true" > <!-- action="{!fetchDataOTP}"  -->
+
+    <apex:include pageName="LoadingOverlay" />
+    <apex:includeScript value="/support/console/24.0/integration.js"/> 
+    <!-- Fix for defect 113951 - adding a VF Page which has the javascript for disabling the buttons-->    
+    <apex:include pageName="VF_DisableButton"/>
+    <!-- Fix for defect # 113951 Ends here -->
+    
+     <apex:includescript value="{!$Resource.jquery1113min}" />
+    
+<apex:form id="form"> 
+  <apex:actionFunction action="{!AccountPopulated}" name="ShowBankDetailsAF" id="ShowBankDetailsAF"  reRender="BankName,Last4" status="loading" /> 
+  
+  <apex:pageMessage severity="info" strength="2"  summary="Recurring Payment Schedule already exists for this finance account number." title="IMPORTANT NOTE :" rendered="{!RecurringFlag== true}"></apex:pageMessage> 
+  
+   
+  <apex:pageBlock rendered="{!RecurringFlag== true}">
+      <apex:pageBlockSection >
+
+        <apex:pageBlockSectionItem >
+        <apex:outputLabel value="Charge Amount"></apex:outputLabel>
+        <apex:outputText value="{!COrderRP[0].ChargentOrders__Charge_Amount__c}"></apex:outputText>
+        </apex:pageBlockSectionItem>
+
+        <apex:pageBlockSectionItem >
+        <apex:outputLabel value="Charge Date"></apex:outputLabel>
+        <apex:outputText value="{!COrderRP[0].ChargentOrders__Charge_Date__c }"></apex:outputText>
+        </apex:pageBlockSectionItem>
+            
+       </apex:pageBlockSection>
+   </apex:pageBlock>
+   
+   
+  <apex:pageMessage severity="info" strength="2" summary="You are not allowed to access Standard One-Time payment page." rendered="{!eligibleFlag == false}" title="IMPORTANT NOTE :" ></apex:pageMessage>         
+  <apex:pageBlock rendered="{!eligibleFlag  == true}">
+  <apex:pagemessages id="PageMessage"></apex:pagemessages>
+     
+   
+   <apex:pageBlockButtons >
+       <!-- Fix for defect # 113951 - added a onclick logic to disable save/Save & New button -->     
+       <apex:commandButton value="Save" action="{!saveOTP}" reRender="form" id="saveButton" onclick="DisableButton();"  status="loading"/>       
+       <apex:commandButton value="Save and New" action="{!saveandnewOTP}" reRender="form"   status="loading" onclick="DisableButton();"   id="saveNewButton"/>
+         <apex:commandButton value="Cancel" onclick="testCloseTab();return false;"/> <!-- action="{!CancelOTP}"  Removed this action and added the Script to cancel the page-->
+    </apex:pageblockButtons> 
+
+     
+        <apex:pageBlockSection title="Std One-Time Payment Information" id="PaymentId"  showHeader="true">
+               <apex:pageBlockSectionItem >
+                   {!$ObjectType.ChargentOrders__ChargentOrder__c.fields.ChargentOrders__Charge_Amount__c.label}
+                       <img src="/s.gif" alt="Help" class="helpIcon" title="{!$ObjectType.ChargentOrders__ChargentOrder__c.fields.ChargentOrders__Charge_Amount__c.inlineHelpText}"/>
+                   <apex:inputfield value="{!cOrder.ChargentOrders__Charge_Amount__c}"  />
+               </apex:pageBlockSectionItem>
+                
+                
+               <apex:selectList value="{!SelBankAcc}" multiselect="false" size="1"  label="Bank Account Nickname"  onchange="ShowBankDetailsJS();" >
+                   <apex:selectOptions value="{!BankAccs}"/>
+               </apex:selectList>
+               
+               <apex:pageBlockSectionItem >
+               {!$ObjectType.ChargentOrders__ChargentOrder__c.fields.ChargentOrders__Payment_Start_Date__c.label}
+                   <apex:actionRegion >
+                       <apex:inputfield value="{!cOrder.ChargentOrders__Payment_Start_Date__c}"  >                                  
+                           <apex:actionSupport event="onchange" action="{!checkDatevalueOTP}" reRender="PageMessage" />                            
+                       </apex:inputField>
+                   </apex:actionRegion>
+               </apex:pageBlockSectionItem>
+               
+               <apex:pageBlockSectionItem >
+               {!$ObjectType.ChargentOrders__ChargentOrder__c.fields.ChargentOrders__Bank_Name__c.label}
+                       <img src="/s.gif" alt="Help" class="helpIcon" title="{!$ObjectType.ChargentOrders__ChargentOrder__c.fields.ChargentOrders__Bank_Name__c.inlineHelpText}"/>
+               <apex:outputfield value="{!cOrder.ChargentOrders__Bank_Name__c}" id="BankName"/> 
+               </apex:pageBlockSectionItem>                 
+               <apex:pageBlockSectionItem />
+               <apex:outputfield value="{!cOrder.Payment_Source_Nickname__r.Last_4__c}" id="Last4"/>
+               
+           </apex:pageBlockSection> 
+         
+          
+    </apex:pageBlock>
+    
+    
+    
+    
+     <script>
+         
+         window.onload=testSetTabTitle();       
+        function testSetTabTitle() {
+            sforce.console.setTabTitle('Standard One Time Payment');     
+            testSetTabUnsavedChanges();
+        } ;
+
+        function testSetTabUnsavedChanges() {
+            sforce.console.setTabUnsavedChanges(true);
+        };
+        
+        function testCloseTab() {
+            //First find the ID of the current tab to close it
+            
+            if (sforce.console.isInConsole()) {
+                sforce.console.getEnclosingTabId(closeSubtab);
+            } else {
+                window.location.href = '/' + '{!FinSFDCId}'  ;
+            }
+        }
+        
+        var closeSubtab = function closeSubtab(result) {
+            //Now that we have the tab ID, we can close it
+            var tabId = result.id;
+            sforce.console.closeTab(tabId);
+        };
+    
+                        
+         function ShowBankDetailsJS(){
+            ShowBankDetailsAF();
+         }
+         
+         
+
+                
+                  
+
+    </script> 
+      
+      
+  </apex:form>  
+</apex:page>

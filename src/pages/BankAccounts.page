@@ -1,0 +1,1006 @@
+<apex:page action="{!initialize}" standardcontroller="Payment_Source__c" extensions="PaymentSourceControllerExtension"  docType="html-5.0" sidebar="false" standardStylesheets="false" showheader="false" cache="false"  language="en-US" id="bankAccountPageId">
+<!--Adding the SessionTimeout component for Defect#114172-->
+    <c:SessionTimeout isHonda="{!Honda}"/> 
+          
+    <apex:form id="form">
+    <apex:outputpanel rendered="{!Honda}">
+    <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/css/style.css')}" /> 
+      </apex:outputpanel>
+      <apex:outputpanel rendered="{!Not(Honda)}">
+     <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/css/acura-style.css')}"/>
+     </apex:outputpanel>
+   
+    <apex:includeScript value="{!$Resource.Jquery183}"/>
+    <apex:includeScript value="{!URLFOR($Resource.Calender, 'datepicker/javascript/jquery-1.11.1.js')}" />
+    <apex:includescript value="{!URLFOR($Resource.TrackingJS, 'AppMeasurement_JavaScript-1.5.2/VisitorAPI.js')}"/>
+    <apex:includescript value="{!URLFOR($Resource.TrackingJS, 'AppMeasurement_JavaScript-1.5.2/AppMeasurement.js')}"/>   
+      
+         <html>
+          <head>
+              <meta name="viewport" content="width=640"/>
+            <meta/>
+            <title>Bank Account Set Up</title>           
+             
+             <style media='print'>
+                    
+                    @media print
+                    {
+                    body *{ visibility: hidden; }
+                    #divname * {visibility: visible; }
+                    #divname {position :absolute; top:40px; left:40px; }
+                    
+                    }
+            </style>
+             <style>
+             .overlay-layer{
+       
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: #000000;
+                opacity: .15;
+                filter: alpha(opacity=15);
+                -moz-opacity: .15;
+                z-index: 10;
+                
+             .myCustomMessage .message {
+              background: none  !important;
+              border: none !important;
+              }
+
+        }
+        </style>
+        <script type="text/javascript">
+                function printDiv(divname){
+                var printContents = document.getElementById(divname).innerHTML;
+                var originalContents = document.body.innerHTML;        
+                document.body.innerHTML = printContents;
+                window.print();
+                document.body.innerHTML = originalContents;
+            }
+            
+             function accOverview(){
+            var isHondaacc= {!Honda};
+            
+            if(isHondaacc){
+                window.top.location={!$Label.AccountOverviewURL}; 
+            }else{
+                window.top.location={!$Label.Accura_Account_Overview_URL}; 
+            }
+            return false;
+        }
+        </script>
+
+       <script type="text/javascript">
+       
+        j$ = jQuery.noConflict();
+
+     
+
+            function isChecked(e) {
+
+                if(j$("#check1:checked").length == 0){
+
+                    e.preventDefault();
+
+                }
+
+            }
+            
+            function validateDataJs(btnId){
+              bankAccountTypeJs();
+              bankNumberJs();
+              reEnterbankNumberJs();
+              validateTermsConditions();
+              validateRNJS();
+              if(document.getElementById("{!$Component.bankNameId}") != null)
+              {
+              validateBankName();
+              }
+            
+              if(!document.getElementById("errorsAccountTypeId").innerHTML == ''
+              || !document.getElementById("errorsRoutingNumberId").innerHTML == ''
+              || !document.getElementById("errorsBankAccountNumberId").innerHTML == ''
+              || !document.getElementById("errorsReEnterBankNumberId").innerHTML == ''
+              || !document.getElementById("errorscheck1Id").innerHTML == ''
+              || !document.getElementById("errorsBankNameId").innerHTML == ''
+              )
+              {
+
+              return  false;
+              }
+              var v = document.getElementById(btnId).disabled = true;
+              document.getElementById(btnId).style.background= '#ccc';
+              reviewBankAccounts();
+              return true;
+                
+             }
+        function validateRNJS()
+        {
+            var numbers = /^[-+]?[0-9]+$/;
+            document.getElementById("errorsRoutingNumberId").innerHTML = '';
+            document.getElementById("{!$Component.routingNumberId}").style.border = "";
+            var routingNumber = document.getElementById(routingNumberids).value;
+            
+            if(routingNumber.length == 0 || routingNumber.length < 9) 
+            {
+                 var error  = '<br>Enter a valid 9-digit routing number.';
+            }
+            if(routingNumber.length > 0 && !routingNumber.match(numbers))
+            {
+                 var error = '<br>Enter a valid 9-digit routing number.';
+            }
+            if(error)
+                {
+                 document.getElementById("{!$Component.routingNumberId}").style.border = "1px solid #FF6600";
+                 document.getElementById("errorsRoutingNumberId").innerHTML = error;
+                // return false;
+            }
+            // return true;
+        }
+        function validateRoutingNumberJs()
+        {  
+            var numbers = /^[-+]?[0-9]+$/;
+            document.getElementById("errorsRoutingNumberId").innerHTML = '';
+            document.getElementById("{!$Component.routingNumberId}").style.border = "";
+            var routingNumber = document.getElementById(routingNumberids).value;
+            if(routingNumber.length > 0 && !routingNumber.match(numbers))
+            {
+                 var error = '<br>Enter a valid 9-digit routing number.';
+                 document.getElementById("{!$Component.routingNumberId}").style.border = "1px solid #FF6600";
+                 document.getElementById("errorsRoutingNumberId").innerHTML = error;
+                 return false;
+            }
+            else if(routingNumber.length == 0 || routingNumber.length < 9) {
+                 var error  = '<br>Enter a valid 9-digit routing number.';
+                 document.getElementById("{!$Component.routingNumberId}").style.border = "1px solid #FF6600";
+                 document.getElementById("errorsRoutingNumberId").innerHTML = error;
+                 return false;
+            }
+            else
+                {
+                    validateRoutingNumber();
+                }
+            //return true;
+            
+        }
+        function bankAccountTypeJs()
+        {   
+            document.getElementById("errorsAccountTypeId").innerHTML = '';
+            document.getElementById("{!$Component.accountTypeId}").style.border = "";
+            var accountType = document.getElementById(type).value;
+            
+            if(accountType.length == 0 || accountType == 'Select One' )
+            {
+                 var error  = '<br>Select a bank account type.';
+                 document.getElementById("{!$Component.accountTypeId}").style.border = "1px solid #FF6600";
+                 document.getElementById("errorsAccountTypeId").innerHTML = error;
+                 // return false;
+            }
+            // return true;
+            
+        }
+        function validateBankName()
+        {
+            document.getElementById("errorsBankNameId").innerHTML = '';
+            document.getElementById("{!$Component.bankNameId}").style.border = "";
+            var bankname = document.getElementById(banknames).value; 
+            if(bankname.length == 0)
+            {
+                var error = '<br>Enter your bank name.';
+                document.getElementById("{!$Component.bankNameId}").style.border = "1px solid #FF6600";
+                document.getElementById("errorsBankNameId").innerHTML = error;
+                // return false;
+            }
+            // return true;
+        }
+        function bankNumberJs()
+        {   
+            
+            var numbers = /^[-+]?[0-9]+$/;
+            document.getElementById("errorsBankAccountNumberId").innerHTML = '';
+            document.getElementById("{!$Component.bankAccountNumberId}").style.border = "";
+            var bankaccountNumber = document.getElementById(accountNumber).value; 
+            
+        //114067 -  Added by Shubham
+            var numberValbankaccountNumber = Number(bankaccountNumber);
+            if(numberValbankaccountNumber < 0 ){
+                
+                var error = '<br>Enter a valid bank account number.';
+            }
+               else if(bankaccountNumber.length == 0 )
+                {
+                 var error = '<br>Enter a bank account number.';
+          }
+              else  if(bankaccountNumber.length > 0 && !bankaccountNumber.match(numbers))
+                {
+                 var error = '<br>Enter a bank account number.';
+                }
+                if(error)
+                {
+                document.getElementById("{!$Component.bankAccountNumberId}").style.border = "1px solid #FF6600";
+                document.getElementById("errorsBankAccountNumberId").innerHTML = error;
+                // return false;
+                }
+            
+            // return true;
+        }
+        function reEnterbankNumberJs()
+        {
+            var numbers = /^[-+]?[0-9]+$/;
+            document.getElementById("errorsReEnterBankNumberId").innerHTML = '';
+            document.getElementById("{!$Component.reEnterBankNumberId}").style.border = "";
+            var bankaccountNumber = document.getElementById(accountNumber).value; 
+            var reEnterBankNumber = document.getElementById(reenteraccountnumber).value;
+                if(reEnterBankNumber.length == 0)
+                {
+                 var error = '<br>Re-enter bank account number.';
+                }
+                if(reEnterBankNumber.length > 0 && !reEnterBankNumber.match(numbers))
+                {
+                 var error = '<br>Re-enter bank account number.';
+                }
+                if(!error && bankaccountNumber != reEnterBankNumber)
+                {
+                 var error = '<br>Account numbers do not match.';
+                }
+                if(error)
+                {
+                document.getElementById("{!$Component.reEnterBankNumberId}").style.border = "1px solid #FF6600";
+                document.getElementById("errorsReEnterBankNumberId").innerHTML = error;
+                 // return false;
+                }
+            
+            // return true;
+        }
+        function validateTermsConditions()
+        {
+            document.getElementById("errorscheck1Id").innerHTML = '';
+            document.getElementById("{!$Component.check1}").style.border = "";
+            var checkboxvalue = document.getElementById(checkboxval).checked; 
+            if(checkboxvalue == false)
+            {
+            var error = '<br>You must agree to the Terms and Conditions to continue.';
+            document.getElementById("{!$Component.check1}").style.border = "1px solid #FF6600";
+            document.getElementById("errorscheck1Id").innerHTML = error;
+            // return false;
+            }
+            // return true;
+        }
+      
+      </script>
+       
+        <script type="text/javascript">
+        j$(document).ready(function() {
+            reenterDisable();
+        });
+        </script> 
+        
+        <script type="text/javascript">
+          function reenterDisable() {
+          
+          j$('.focustop')[0].scrollIntoView();
+          
+            j$('[id$=reEnterBankNumberId]').bind("cut copy paste", function(e) {
+                e.preventDefault();
+                  j$('[id$=reEnterBankNumberId]').bind("contextmenu", function(e) {
+                    e.preventDefault();
+                });
+            });
+          }
+          
+
+      
+      </script>
+          </head>
+          <body onkeydown = "return (event.keyCode!=13)">
+          <script language="JavaScript" type="text/javascript">
+            /* You may give each page an identifying name, server, and channel on
+            the next lines. */
+            s.pageName="BankAccounts"
+            s.server=""
+            s.channel=""
+            s.pageType=""
+            s.prop1=""
+            s.prop2=""
+            s.prop3=""
+            s.prop4=""
+            s.prop5=""
+            /* Conversion Variables */
+            s.campaign=""
+            s.state=""
+            s.zip=""
+            s.events=""
+            s.products=""
+            s.purchaseID=""
+            s.eVar1=""
+            s.eVar2=""
+            s.eVar3=""
+            s.eVar4=""
+            s.eVar5=""
+            var s_code=s.t();if(s_code)document.write(s_code);
+</script>
+          <div class="focustop" />
+          <div class="overlay"></div>
+                
+                <apex:outputPanel id="jsPanel">
+                    <script>
+                      function popWinClose()
+                      {
+                        //setTimeout(window.close, 1000);
+                        //window.open('','_self',''); 
+                        window.close();
+                        //return false;
+                      }
+                      
+                      
+                        
+                    </script>
+                </apex:outputPanel>
+                
+                <apex:actionStatus onstart="loading(true,'bankLoading')" onstop="loading(false,'bankLoading')" id="bankStatus"/>
+                 <!-- Start: Spinner Wheel Message functionality was added by Omkar for the Defect #114048--> 
+                <apex:actionStatus onstart="loading(true,'bankLoadingmsg')" onstop="loading(false,'bankLoadingmsg')" id="bankStatusmsg"/>
+                <!-- End -->
+                  <apex:outputPanel id="outputPanel11">  
+                
+                <div class="waitingSearchDiv overlay-loader" id="bankLoading" style="display:none;"> 
+                    <div class="waitingHolder">
+                        <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/loading.gif')}" title="Please Wait" width="32" height="32" />                     
+                    </div>
+                </div> 
+                 <!-- Start: Spinner Wheel Message functionality was added by Omkar for the Defect #114048-->  
+                <div class="waitingSearchDiv overlay-loader" id="bankLoadingmsg" style="display:none;"> 
+                    <div class="waitingHolder">
+                        <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/loading.gif')}"/>
+                        <br/><div style="margin-left:-150px; width:500px;">
+                            <span class="waitingDescription"> <b>Processing your request. Do not refresh this page.</b></span> 
+                        </div>
+                    </div>
+                </div>  
+                <!-- End -->    
+               
+                <!--Change made in place for defect # 112907-->
+                <!--<apex:actionfunction name="validateRoutingNumber" action="{!validateRoutingNumber}" reRender="outputPanel11" oncomplete="reenterDisable();"/>-->
+                <apex:actionfunction name="validateRoutingNumber" action="{!validateRoutingNumber}" reRender="routingNumberPanel,bankNamePanel" oncomplete="reenterDisable();"/>
+                
+                <apex:actionfunction name="reviewBankAccounts" action="{!reviewBankAccounts}" reRender="outputPanel11,outputPanle12" oncomplete="reenterDisable();" status="bankStatus"/>
+                
+                <!-- Start Cancel Request -->
+                <apex:actionfunction name="cancelPage_JS" action="{!checkDevice}" oncomplete="{!If(mobile==false,'redirectToHFS_JS();','popWinClose()')}"/>
+                <!--- Jayashree added this for defect#113982 -------------------------->
+                <apex:actionfunction name="EditBtn" action="{!editBankAccounts}" reRender="outputPanel11,outputPanle12"  oncomplete="reenterDisable();" status="bankStatus"/>
+                 <!-- Start: Spinner Wheel Message functionality was added by Omkar for the Defect #114048--> 
+                <apex:actionfunction name="SubBtn" action="{!submitBankAccounts}" reRender="outputPanel13,outputPanle12" status="bankStatusmsg"/>
+                <!-- End -->
+
+                <script>
+                    function redirectToHFS_JS(){
+                        if('{!Honda}' == 'true'){
+                          window.top.location={!$Label.AccountOverviewURL};
+                        
+                        }else{
+                          window.top.location={!$Label.Accura_Account_Overview_URL};
+                        }
+                    }
+                
+                </script>
+                
+                <!-- End Cancel Request -->
+
+                <apex:outputPanel rendered="{!editMode == true && reviewMode == false}">
+                <!--Breadcrum-->
+                <div class="middle-col pB10">
+                <div class="middle-title" id="checkindex" tabindex="-1">
+                  <p>
+                   <apex:commandLink onclick="ovelayPop();" action="{!displayPopUp}" reRender="outputPanel11" value="" >
+                    <span>Account Overview </span>
+                    <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/>
+                    </apex:commandLink>
+                  </p>
+                  <h1>Add Bank Account </h1>
+                </div>
+                <section>
+                  <div class="step-pro-breadcrumb">
+                    <div class="process-level">
+                      <div class="step-one pull-left">
+                        <div class="step-name">Set Up</div>
+                        <div class="step-count">1</div>
+                      </div>
+                      <div class="process-control process-none">
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                      </div>
+                    </div>
+                    <div class="process-level">
+                      <div class="step-one pull-left step-disable">
+                        <div class="step-name">Review</div>
+                        <div class="step-count">2</div>
+                      </div>
+                      <div class="process-control process-none">
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                      </div>
+                    </div>
+                    <div class="step-one pull-left step-disable last">
+                      <div class="step-name">Completed</div>
+                      <div class="step-count">3</div>
+                    </div>
+                  </div>
+                <!--Breadcrum-->
+                   <div class="bank-acc-details">
+                    <div class="secondary-title">
+                      Provide your bank account information
+                    </div>
+                      
+                    <div class="round-box">
+                      <div class="bank-info">
+                        <span class="error-model">* Required fields</span>
+                        
+                        <div class="form-field">
+                            <label for="bank-name">Bank Account Nickname</label>
+                            <div align="center">
+                               <apex:inputField value="{!Payment_Source__c.Payment_Source_Nickname__c}" id="bankAccountNicknameId"   styleClass="medium-input" html-placeholder="Bank Account Nickname"/>
+                            </div>
+                         </div>
+                         
+                        <div class="form-field">
+                            <label for="bank-name">* Bank Account Type</label>
+                            <div class="select-box-cover" style="margin-left:35px;">
+                              <span class="fancyArrow"></span>
+                             <!-- <apex:inputField value="{!Payment_Source__c.Bank_Account_Type__c}" id="accountTypeId" onblur="return bankAccountTypeJs()" styleClass="medium-input"  html-placeholder="Enter Nick Name"/> -->
+                              <apex:selectList value="{!bankAccountType}" multiselect="false" size="1" id="accountTypeId" onblur="return bankAccountTypeJs()" styleClass="medium-input" >
+                                    <apex:selectOption itemValue="Select One" itemLabel="Select One"/>
+                                    <apex:selectOption itemValue="Checking" itemLabel="Checking"/>
+                                    <apex:selectOption itemValue="Savings" itemLabel="Savings"/>
+                            </apex:selectList>
+                             </div>
+                               <div id="errorsAccountTypeId">
+                               </div>
+                        </div>
+                        
+                        <div class="form-field">
+                            <label for="bank-name">* Bank Routing Number
+                              <a href="javascript:;" class="tooltip">
+                                <b>?</b>
+                                <span class="tooltip-box">The routing number contains 9 digits and is printed on
+     your checks (see example below). Please contact your financial institution if you need assistance.</span>
+                              </a>
+                            </label>
+                            <apex:outputPanel id="routingNumberPanel">
+                            <div align="center">
+                              
+                              <apex:inputField value="{!Payment_Source__c.Bank_Routing_Number__c}" id="routingNumberId" onblur="return validateRoutingNumberJs()"  styleClass="medium-input"   html-placeholder="Bank Routing Number" style="{!IF(isValidRouting = 'No','border:1px solid #FF6600','border:1px solid #FFF')}"/>
+                               <div id="errors">
+                                 <apex:outputPanel styleClass="inValidRN" id="InvalidRoutingNumber" rendered="{!routingNumberError == 'Invalid'}" >
+                                 <apex:pageMessage severity="error"   summary="Enter a valid 9-digit routing number." />
+                                 </apex:outputPanel>
+                                 <apex:outputPanel style="color:red; font-size:12px !important; text-align:right; float:right;" id="ErrorOnService" rendered="{!routingNumberError == 'Error on Service'}">
+                                 <apex:pageMessage severity="error"   summary="Something is wrong in validating routing number" />
+                                 </apex:outputPanel>
+                               </div>
+                               <div id="errorsRoutingNumberId">
+                             </div>
+                            </div>
+                            </apex:outputPanel>
+                        </div>
+                        
+                        <div class="form-field">
+                            <label for="bank-name">* Bank Account Number 
+                              <a href="javascript:;" class="tooltip">
+                                <b>?</b>
+                                <span class="tooltip-box">The bank account number is printed 
+    on your checks (see example below) and bank statements. Please contact your financial institution if you need assistance.</span>
+                              </a>
+                            </label>
+                            <div align="center">
+                              <apex:inputField value="{!Payment_Source__c.Bank_Account_Number__c}"  id="bankAccountNumberId"  onblur="return bankNumberJs()" styleClass="medium-input" html-placeholder="Bank Account Number"/>
+                              <div id="errorsBankAccountNumberId">
+                              </div>
+                           </div>
+                        </div>
+                        
+                        <div class="form-field">
+                            <label for="bank-name">* Re-enter Bank Account Number </label>
+                            <div align="center">
+                              <apex:inputText value="{!reEnterbankNumber }" id="reEnterBankNumberId"  onblur="return reEnterbankNumberJs()" styleClass="medium-input" html-placeholder="Bank Account Number"/>
+                              <div id="errorsReEnterBankNumberId">
+                              </div>
+                            </div>
+                          </div>
+                <!--Change made in place for defect # 112907-->       
+                 <apex:outputPanel id="BnmId">            
+                 <div class="form-field">
+                    <label for="bank-name">* Bank Name <a href="javascript:;" class="tooltip">
+                                <b>?</b>
+                                <span class="tooltip-box">More than one bank name might be associated to your routing number. If the bank name is incorrect please type in the correct name, or contact your financial institution for further assistance.</span>
+                              </a></label>
+                    <apex:outputPanel id="bankNamePanel" layout="block">
+                    <div align="center">
+                      <apex:inputField value="{!Payment_Source__c.Bank_Name__c}" rendered="{!bankNameFlag}" id="bankNameId"  onblur="return validateBankName()" styleClass="medium-input" html-placeholder="Enter Bank Name" />
+                      <div id="errorsBankNameId">
+                      </div>
+                      <apex:outputField value="{!Payment_Source__c.Bank_Name__c}" id="bankNameOutputId" rendered="{!NOT(bankNameFlag)}" styleClass="medium-input" />
+                      </div>
+                      </apex:outputPanel>
+                  </div>
+                </apex:outputPanel>
+                  <script>
+                  var banknames = '{!$Component.bankNameId}';
+                  var nickname = '{!$Component.bankAccountNicknameId}';
+                  var type = '{!$Component.accountTypeId}';
+                  var routingNumberids = '{!$Component.routingNumberId}';
+                  var accountNumber = '{!$Component.bankAccountNumberId}';
+                  var reenteraccountnumber = '{!$Component.reEnterBankNumberId}';
+                  
+                  </script>
+                  
+                    </div>
+                  </div>
+                 </div>
+                   <!-- Bank Account Details first section End -->
+                    <div align="center">
+                    <apex:image url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/check.png')}" />
+                  </div>
+                  <div class="term-condition">
+                    
+                    <div class="pull-right pT10">
+                      <div class="printer-version">
+                      <!--  <a href="javascript:printDiv('TermsCondition');" > -->
+                      <apex:commandLink onclick="window.open('apex/PdfTermsandCondNewBankAcc?ishonda={!Honda}')" target="_blank" reRender="TermsCondition">
+                          <apex:image url="{!URLFOR($Resource.bankaccsetup, 'bankaccsetup/bankaccounts/images/printer-icon.png')}" width="20px"/>
+                          <!-- <img src="images/printer-icon.png" width="20px" height="20px"/> -->
+                          <span>Printer Friendly Version</span>
+                     <!--   </a> -->
+                     </apex:commandLink>
+                      </div>
+                    </div>
+                    <div class="clear"></div>
+                    <div class="secondary-title padding10 pull-left">
+                      Terms &amp; Conditions
+                    </div>
+                    <div class="clear padding10">
+                      To continue, read the following, <span class="red-bold">scroll to the bottom</span> and agree to the Terms &amp; Conditions.
+                    </div>
+                    <!-- Start Tems and condition new section for both acura and honda. replace with textarea  -->
+                    <div class="textarea-text terms-condition" id="TermsCondition" style="margin:10px 0;">
+                        <div class="print-pdf-section" >
+                            <apex:outputpanel layout="block" rendered="{!Honda}">
+                            <p class="tc-head">Payment Withdrawal Authorization</p>
+                            <p class="tc-content">When you provide your bank account information to us, you authorize Honda Financial Services to withdraw funds by electronic transfer from the account identified by you each time you request a payment using our online or telephone payment services (and to make credits to correct errors). You will select the amount of the payment and the payment date when you request a payment. This authorization will remain in effect until you cancel it. You may cancel your authorization at any time online by accessing this website and removing the bank account information, but the cancellation will not apply to any payments you have already requested and are already in process. If you cancel your authorization, you will no longer be able to request payments using our online or telephone payment services. This method of cancellation (and other methods of cancellation we may make available from time to time) is the only way that you can cancel this authorization.</p>
+                            <p class="tc-content">If any payment is rejected due to insufficient funds, Honda Financial Services may charge you a fee and your bank may also charge you a fee.</p>
+                            <p class="tc-content">You agree that the payments authorized by you must comply with the terms of U.S. law.</p>
+                            <p class="tc-content">Please print or save a copy of this authorization for your records.</p>
+                           </apex:outputpanel>            
+                        </div>
+                        <div class="print-pdf-section">
+                           <apex:outputpanel layout="block" rendered="{!Not(Honda)}">
+                            <p class="tc-head">Payment Withdrawal Authorization</p>
+                            <p class="tc-content">When you provide your bank account information to us, you authorize Acura Financial Services to withdraw funds by electronic transfer from the account identified by you each time you request a payment using our online or telephone payment services (and to make credits to correct errors). You will select the amount of the payment and the payment date when you request a payment. This authorization will remain in effect until you cancel it. You may cancel your authorization at any time online by accessing this website and removing the bank account information, but the cancellation will not apply to any payments you have already requested and are already in process. If you cancel your authorization, you will no longer be able to request payments using our online or telephone payment services. This method of cancellation (and other methods of cancellation we may make available from time to time) is the only way that you can cancel this authorization.</p>
+                            <p class="tc-content">If any payment is rejected due to insufficient funds, Acura Financial Services may charge you a fee and your bank may also charge you a fee.</p>
+                            <p class="tc-content">You agree that the payments authorized by you must comply with the terms of U.S. law.</p>
+                            <p class="tc-content">Please print or save a copy of this authorization for your records.</p>
+                            </apex:outputpanel>
+                        </div>
+                    </div>
+                    <!-- End Tems and condition new section for both acura and honda. replace with textarea  -->
+                    <div class="mTB10">
+                      <apex:inputcheckbox value="{!termsAndConditions}" id="check1" onblur="return validateTermsConditions()"/>
+                      
+                      <apex:outputlabel for="check1">I have read and agree to Terms &amp; Conditions.</apex:outputlabel>
+                      <div id="errorscheck1Id">
+                      </div>
+                    </div>
+                    <script>
+                      var checkboxval='{!$Component.check1}';
+                      </script>
+                    
+                  
+                    <div class="pR10 ta-right"> 
+                    
+                      <apex:commandButton value="Cancel" onclick="ovelayPop();" action="{!displayPopUp}" reRender="outputPanel11" styleclass="regular-btn btn-3 mR10 getOverlay mR10" style="border:0;border-radius:4px;outline:none;box-shadow:inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75);" status="bankStatus"/>
+                      <apex:commandButton value="Continue" onclick="validateDataJs(this.id); return false" id="CtBankid" styleclass="primary-btn btn-3 scroll-top" style="border:0;border-radius:4px;outline:none;box-shadow:inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75);" status="bankStatus"/>
+                    </div>
+                  </div>
+                </section>
+              </div>
+             <!-- Popup -->
+                <apex:outputPanel id="popup" style="display:block; top:5%;; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;"  layout="block" rendered="{!displayPopUp == true}">
+                <div class="window-size-two" id="delete-pop">
+                  <h3>Go to Account Overview?</h3>
+                  <div class="pop-up-details">
+                    <p class="window-msg">You will now be directed to your Account Overview page. All of the information that you have entered will be lost. Are you sure you want to proceed?
+    </p>
+                    
+                    
+                      <div class="pop-btn-section">
+                      <label><apex:commandButton styleClass="regular-btn btn-3 js-modal-close close" action="{!hidePopUp}" value="No" reRender="outputPanel11"  oncomplete="removeovelayPop(); reenterDisable();" id="clickmeotpno1"/></label>
+                      <label><apex:commandButton styleClass="primary-btn btn-3" value="Yes" action="{!doNothingMethod}" onclick="cancelPage_JS();return false;" reRender="outputPanel11"/></label>
+                      <!-- label><apex:commandButton styleClass="primary-btn btn-3" value="Yes" onclick="{window.top.location={!$Label.AccountOverviewURL}; return false;}"/></label> -->
+                     </div> 
+                     
+                     
+                  </div>
+                </div>
+                </apex:outputPanel>
+                <!-- End of Popup --> 
+              
+            </apex:outputPanel>
+            
+            </apex:outputPanel>
+            <!-- First section end-->
+            <!-- Review Section -->
+            <apex:outputPanel id="outputPanle12">
+            <apex:outputpanel rendered="{!editMode == false && reviewMode == false && successMode == false}">
+                    <div class="middle-col pB10">
+                    <div class="middle-title">
+                    <p>
+                    <apex:outputPanel rendered="{!Honda}">
+                    <apex:commandLink onclick="{window.top.location={!$Label.AccountOverviewURL}; return false;}" value="" >
+                    <span>Account Overview </span> 
+                    <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/>
+                    </apex:commandLink>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!Not(Honda)}">
+                    <apex:commandLink onclick="{window.top.location={!$Label.Accura_Account_Overview_URL}; return false;}" value="" >
+                    <span>Account Overview </span> 
+                    <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/>
+                    </apex:commandLink>
+                    </apex:outputPanel> 
+                  </p>
+                    <h1>Add Bank Account </h1>
+                    </div>
+                    <!--- Changes added to the defect 114165 by Jayashree --->
+                    <apex:outputpanel rendered="{!Honda}">
+                        <div class="pL10 pR10">We are unable to  process your request at this time. Please try again later. For customer support,&nbsp;<a href="{!$Label.HondaCSEP}" target="_blank" styleclass="clkhere"  >click here</a>  for contact information.</div>
+                    </apex:outputpanel>
+                    <apex:outputpanel rendered="{!Not(Honda)}">
+                        <div class="pL10 pR10">We are unable to  process your request at this time. Please try again later. For customer support,&nbsp;<a href="{!$Label.AcuraCSEP}" target="_blank" styleclass="clkhere"  >click here</a>  for contact information.</div>
+                    </apex:outputpanel>
+                    <!---End of defect 114165 --->
+                    </div>
+            </apex:outputpanel>
+            <apex:outputPanel rendered="{!editMode == false && reviewMode == true}">
+            
+            <div class="middle-col pB10">
+                <div class="middle-title">
+                  <p>
+                   <apex:commandLink onclick="ovelayPop();" action="{!displayPopUp}" reRender="outputPanle12" value="" >
+                    <span>Account Overview </span>
+                    <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/>
+                    </apex:commandLink>
+                  </p>
+                  <h1>Add Bank Account </h1>
+                </div>
+                
+                <section>
+                  <div class="step-pro-breadcrumb">
+                    <div class="process-level">
+                      <div class="step-one pull-left">
+                        <div class="step-name">Set Up</div>
+                        <div class="step-count" onclick="javascript: document.getElementById('bankAccountPageId:form:editButtonPanel2').click();" style="cursor: pointer;">1</div>
+                      </div>
+                      <div class="process-control">
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                      </div>
+                    </div>
+                    <div class="process-level">
+                      <div class="step-one pull-left">
+                        <div class="step-name">Review</div>
+                        <div class="step-count">2</div>
+                      </div>
+                      <div class="process-control process-none">
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                      </div>
+                    </div>
+                    <div class="step-one pull-left step-disable last">
+                      <div class="step-name">Completed</div>
+                      <div class="step-count">3</div>
+                    </div>
+                  </div>
+                  <div class="secondary-title">One last Step...</div>
+                  <div class="padding10">
+                     To complete the process, review and submit the information below.
+                  </div>
+                    <div class="round-box mRL10 review-detail">
+                     <div class="full-size">
+                      <div class="lbltitle">Bank Account Nickname</div>
+                      <div class="lbldesc">
+                        <apex:outputField value="{!Payment_Source__c.Payment_Source_Nickname__c}" style="align:left;"/>
+                      </div>
+                    </div>
+                    <div class="full-size">
+                      <div class="lbltitle">Bank Account Type</div>
+                      <div class="lbldesc">
+                        <!-- <apex:outputField value="{!Payment_Source__c.Bank_Account_Type__c}"/> --> 
+                        <apex:outputText value="{!bankAccountType}"/>
+                      </div>
+                    </div>
+                    <div class="full-size">
+                      <div class="lbltitle">Bank Routing Number</div>
+                      <div class="lbldesc">
+                        
+                        <apex:outputField value="{!Payment_Source__c.Bank_Routing_Number__c}"/>
+                      </div>
+                    </div>
+                    <div class="full-size">
+                      <div class="lbltitle">Bank Account Number</div>
+                      <div class="lbldesc">
+                        
+                        <apex:outputField value="{!Payment_Source__c.Bank_Account_Number__c}"/>
+                      </div>
+                    </div>
+               
+                  <div class="full-size">
+                      <div class="lbltitle">Bank Name</div>
+                      <div class="lbldesc">
+                        <apex:outputField value="{!Payment_Source__c.Bank_Name__c}"/>
+                      </div>
+                  </div>
+                  </div>
+                  <div class="full-size btn-action">
+                    <div class="pull-left w30">
+                      <apex:commandButton id="editButtonPanel2" value="Edit" onclick="DisableButton(this.id,'EditBtn');return false;" action="{!editBankAccounts}" reRender="outputPanel11,outputPanle12"  oncomplete="reenterDisable();" styleClass="regular-btn btn-3 marginR10" style="border:0;border-radius:4px;outline:none;box-shadow:inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75);" status="bankStatus"/>
+                    </div>
+                    <div class="pull-left ta-right w70">
+                      <apex:commandButton value="Cancel" onclick="ovelayPop();" action="{!displayPopUp}" reRender="outputPanle12" styleClass="regular-btn btn-3 marginR10" style="border:0;border-radius:4px;outline:none;border-right-width:333px;box-shadow:inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75);" status="bankStatus"/>
+                      &nbsp;
+                       <!-- Start: Spinner Wheel Message functionality was added by Omkar for the Defect #114048--> 
+                      <apex:commandButton value="Submit" onclick="DisableButton(this.id,'SubBtn');return false;" id="subBankId" action="{!submitBankAccounts}" reRender="outputPanel13,outputPanle12" styleClass="{!buttonStyle}" style="border:0;border-radius:4px;outline:none;box-shadow:inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75);" disabled="{!csat}" status="bankStatusmsg"/>
+                      <!-- End-->
+                    </div>
+                    </div>
+                    </section>
+                </div>  
+                <!-- Popup -->
+                <apex:outputPanel id="popup2" style="display:block; top:5%;; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;"  layout="block" rendered="{!displayPopUp == true}">
+                <div class="window-size-two" id="delete-pop">
+                  <h3>Go to Account Overview?</h3>
+                  <div class="pop-up-details">
+                    <p class="window-msg">You will now be directed to your Account Overview page. All of the information that you have entered will be lost. Are you sure you want to proceed?
+    </p>
+                    
+                    
+                      <div class="pop-btn-section">
+                      <label><apex:commandButton styleClass="regular-btn btn-3 js-modal-close close" action="{!hidePopUp}" value="No" reRender="outputPanle12"  oncomplete="removeovelayPop();reenterDisable();" id="clickmeotpno2"/></label>
+                      <label><apex:commandButton styleClass="primary-btn btn-3" value="Yes" action="{!doNothingMethod}" onclick="cancelPage_JS();return false;" reRender="outputPanel11"/></label>
+                     </div> 
+                     
+                  </div>
+                </div>
+                </apex:outputPanel>
+                <!-- End of Popup --> 
+            </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel id="outputPanel13">
+            <apex:outputPanel rendered="{!editMode == false && reviewMode == false && successMode == true}">
+            <div class="middle-col pB10">
+                <div class="middle-title">
+                  <p>
+                  <apex:outputPanel rendered="{!Honda}">
+                    <apex:commandLink onclick="{window.top.location={!$Label.AccountOverviewURL}; return false;}" value="" >
+                    <span>Account Overview </span> 
+                    <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/>
+                    </apex:commandLink>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!Not(Honda)}">
+                    <apex:commandLink onclick="{window.top.location={!$Label.Accura_Account_Overview_URL}; return false;}" value="" >
+                    <span>Account Overview </span> 
+                    <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20"/>
+                    </apex:commandLink>
+                    </apex:outputPanel>
+                  
+                    
+                  </p>
+                  <h1>Add Bank Account</h1>
+                </div>
+                <section>
+                  <div class="step-pro-breadcrumb">
+                    <div class="process-level">
+                      <div class="step-one pull-left">
+                        <div class="step-name">Set Up</div>
+                        <div class="step-count">1</div>
+                      </div>
+                      <div class="process-control">
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                      </div>
+                    </div>
+                    <div class="process-level">
+                      <div class="step-one pull-left">
+                        <div class="step-name">Review</div>
+                        <div class="step-count">2</div>
+                      </div>
+                      <div class="process-control">
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                        <div class="process-dot pull-left"></div>
+                      </div>
+                    </div>
+                    <div class="step-one pull-left">
+                      <div class="step-name">Completed</div>
+                      <div class="step-count">3</div>
+                    </div>
+                  </div>
+                  <!-- Breadcrumb  End -->
+                  <div class="pull-right pT10">
+                    <div class="printer-version">
+                        <a href="/apex/PdfBankAccSummary?isHonda={!honda}&BankAccId={!Payment_Source__c.Id}"  target="_blank" >
+                            <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/printer-icon.png')}"  width="20px" height="20px"/>
+                        <span>Printer Friendly Version</span>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="clear"></div>
+                  <div id='tobePrinted'>
+                  <div class="secondary-title summary-title">Thank you!</div>
+                  <div class="padding10">
+                    Your new bank account was successfully added.
+                  </div>
+                  <div class="round-box mRL10 review-detail">
+                    <div class="full-size">
+                      <div class="lbltitle">Bank Account Nickname</div>
+                      <div class="lbldesc">
+                      <apex:outputField value="{!Payment_Source__c.Payment_Source_Nickname__c}"/>
+                      </div>
+                    </div>
+                    <div class="full-size">
+                      <div class="lbltitle">Bank Account Type</div>
+                      <div class="lbldesc">
+                        
+                        <apex:outputField value="{!Payment_Source__c.Bank_Account_Type__c}"/>
+                      </div>
+                    </div>
+                    <div class="full-size">
+                      <div class="lbltitle">Bank Account Number</div>
+                      <div class="lbldesc">
+                        
+                        XXXX-<apex:outputField value="{!Payment_Source__c.Last_4__c}"/>
+                      </div>
+                    </div>
+                    <div class="full-size">
+                      <div class="lbltitle">Bank Name</div>
+                      <div class="lbldesc">
+                        
+                        <apex:outputField value="{!Payment_Source__c.Bank_Name__c}"/>
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+                  <div class="full-size btn-action ta-right">
+                    <apex:commandButton value="Go to Bank Account" action="{!bankAccounts}" styleClass="regular-btn btn-1 mR10" style="border: 0;outline: none;border-radius: 4px;cursor: pointer;box-shadow: inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75);"/>
+                    <apex:commandButton value="Make a Payment" action="{!paymentPage}" styleClass="primary-btn btn-1" style="border: 0;outline: none;border-radius: 4px;cursor: pointer;box-shadow: inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75);"/>
+                  </div>
+                 </section>
+                </div>
+                </apex:outputPanel>
+                </apex:outputPanel>
+        
+         <script>
+         function ovelayPop(){
+            var pj = jQuery.noConflict();    
+            pj(document).ready(function() {
+            pj('.overlay ').addClass('overlay-layer');
+
+     });
+     }   
+     
+     function removeovelayPop(){
+            var pj = jQuery.noConflict();    
+            pj(document).ready(function() {
+             pj('.overlay').removeClass('overlay-layer');
+        
+     });
+     }   
+     
+    </script>
+    <script>
+     <!-- Funciton to Handle Page redirection for Button - YES -->
+     function redirectPage(){
+     var stringvalue='{!Honda}';
+         if ( '{!Honda}' ) {
+                window.top.location={!$Label.AccountOverviewURL}; 
+            }else{
+                window.top.location={!$Label.Accura_Account_Overview_URL}; 
+            }
+     }
+     </script>
+     <script type="text/javascript">
+        var pj = jQuery.noConflict();
+        var checkboxval='{!$Component.check1}';
+        
+
+          pj(document).ready(function () {
+          //checkbox
+          pj("input:checkbox").prop('checked', false);
+          pj("input:checkbox").prop("disabled", true);
+        
+            pj("#TermsCondition").scroll(function () {
+                //the room for scrolling is 30px in the textarea
+                //console.log( pj("#TermsCondition").scrollTop() > 15 );
+                if( pj("#TermsCondition").scrollTop() >= 100) {
+                   // pj('input:checkbox').prop('checked', true);
+                    pj("input:checkbox").prop("disabled", false);
+                } else {
+                    //$('input:checkbox').prop('checked', false);
+                   // $("input:checkbox").prop("disabled", true);
+                }
+            });
+            
+        });
+      </script>
+    <script type="text/javascript">
+    var pj = jQuery.noConflict();
+    pj(document).ready(function () {
+        pj('.scroll-top').click(function(){
+          document.getElementById('checkindex').focus();
+         });
+    });
+  </script>  
+  
+    <script type="text/javascript">
+    var pj = jQuery.noConflict();    
+    pj(function() {
+    // Invoke the plugin
+    pj('input, textarea').placeholder({customClass:'my-placeholder'});
+});
+
+</script>
+
+<script type="text/javascript">
+
+  function loading(val, divname) {
+    if (val) {
+      document.getElementById(divname).style.display = 'block';
+  }
+  else {
+      document.getElementById(divname).style.display = 'none';
+  }
+}
+</script>
+<!------------------------- Disable Buttons Onclick Script Defect #113982 ------------------------------------->
+                
+                        <script>
+                        function DisableButton(btnId,actName) {
+                            var v = document.getElementById(btnId).disabled = true;
+                            document.getElementById(btnId).style.background= '#ccc';
+                                if(actName == 'SubBtn'){
+                                SubBtn();
+                                }
+                                if(actName == 'EditBtn') {
+                                EditBtn();
+                                }
+                                
+                                
+                        }
+                        </script>
+                            
+           <!------------------------ End of Disable Logic Scrpits ----------------------------------->
+
+    
+    <apex:includescript value="{!$Resource.placeholder}" /> 
+        </body>
+        </html>
+    </apex:form>
+
+    </apex:page>

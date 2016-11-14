@@ -1,0 +1,21 @@
+<apex:page standardController="Communication_Preferences__c" extensions="CommunicationPreferenceInlineAgent">
+    <apex:form >  
+            
+         <apex:pageBlock id="pgBlock">
+             <apex:pageMessages />
+          <apex:pageBlockButtons location="top" id="pgButton">
+                <apex:commandButton value="UpdateEdeliveryPreference" action="{!updateEdeliveryPreference}" rendered="{!isReadonly == true}" id="updatebutton" reRender="pgBlock" />
+                <apex:commandButton value="Edit" action="{!updateReadOnly}" rendered="{!isReadonly == false}" reRender="pgBlock" />
+           </apex:pageBlockButtons>
+          
+          <apex:pageBlockSection id="pgBlockSection" >
+                <apex:inputField value="{!Communication_Preferences__c.Email_Address__c}"  rendered="{!isReadonly == true}"/>
+                <apex:inputField value="{!Communication_Preferences__c.Statements_Letters__c}"  rendered="{!isReadonly == true}"/>
+                 <apex:outputField value="{!Communication_Preferences__c.Email_Address__c}" rendered="{!isReadonly == false}"/>
+                <apex:outputField value="{!Communication_Preferences__c.Statements_Letters__c}"  rendered="{!isReadonly == false}"/>
+                <apex:inputField value="{!Communication_Preferences__c.Finance_Account_Number__c}" rendered="false" />
+              </apex:pageBlockSection>
+           </apex:pageBlock>
+      </apex:form>      
+     
+</apex:page>

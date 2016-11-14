@@ -1,0 +1,928 @@
+<apex:page standardcontroller="Communication_Preferences__c"  extensions="CommunicationPreferenceExtension" showHeader="false" sidebar="false" 
+    standardStylesheets="false" docType="html-5.0" language="en-US" id="pge" action="{!init}">    
+    
+    <!--Adding the SessionTimeout component for Defect#114172-->
+    <c:SessionTimeout isHonda="{!Honda}"/> 
+    
+    <apex:outputpanel rendered="{!Honda}">
+        <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/css/style.css')}"/>
+    </apex:outputpanel>
+    <apex:outputpanel rendered="{!Not(Honda)}">
+        <apex:stylesheet value="{!URLFOR($Resource.AFSHFS, 'AfsHfs/css/acura-style.css')}"/>
+    </apex:outputpanel>
+        
+    
+      <apex:includeScript value="{!URLFOR($Resource.Calender, 'datepicker/javascript/jquery-1.11.1.js')}" />
+      <apex:includescript value="{!URLFOR($Resource.TrackingJS, 'AppMeasurement_JavaScript-1.5.2/VisitorAPI.js')}"/>
+    <apex:includescript value="{!URLFOR($Resource.TrackingJS, 'AppMeasurement_JavaScript-1.5.2/AppMeasurement.js')}"/>    
+    
+    <apex:form id="frm">
+        
+         <!-- DEFECT 114168 Start --> 
+         <apex:variable var="headerBooleanVal" value="{!HeaderDisplay}" />
+          <!-- DEFECT 114168 End--> 
+      
+      
+      <apex:actionFunction name="actFunction" action="{!save}" rerender="popup3,Cancel-accoverview" status="cpStatus"/>
+      <apex:pageBlock id="pgblk">
+    <html>
+      <head>
+
+        <meta name="viewport" content="width=640"/>
+        <meta/>
+        <title>Communication Preferences</title>
+       
+        <style>
+    
+        .overlay-layer{
+   
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: #000000;
+            opacity: .15;
+            filter: alpha(opacity=15);
+            -moz-opacity: .15;
+            z-index: 10;
+           
+        }
+
+        </style>
+    
+        <style media='print'>
+                
+                @media print
+                {
+                body *{ visibility: hidden; }
+                #divname * {visibility: visible; }
+                #divname {position :absolute; top:40px; left:40px; }
+                header{ visibility: hidden;}
+                footer{ display:none;}
+                }
+                                             
+        </style>
+        
+        <style type="text/css">        
+             .secondaryTitleCls{
+                    text-transform: none !important;
+              }
+        </style>
+        
+         <script type="text/javascript">
+            function printDiv(divname){
+              var printContents = document.getElementById(divname).innerHTML;
+              var originalContents = document.body.innerHTML;        
+              document.body.innerHTML = printContents;
+              window.print();
+              document.body.innerHTML = originalContents;
+            }
+            
+            function printDivBank(t,tb){
+              document.getElementById(tb).style.display = 'Block';
+              var printContents = document.getElementById(t).innerHTML;
+              var originalContents = document.body.innerHTML;  
+              document.body.innerHTML = printContents;
+              window.print();
+              document.body.innerHTML = originalContents;
+             }
+          function loading(val, divname) {
+              if (val) {
+                document.getElementById(divname).style.display = 'block';
+            }
+            else {
+                document.getElementById(divname).style.display = 'none';
+            }
+          }
+
+        </script>
+              
+      </head>
+      <body onkeydown = "return (event.keyCode!=13)">
+
+      <script language="JavaScript" type="text/javascript">
+            /* You may give each page an identifying name, server, and channel on
+            the next lines. */
+            s.pageName="CommunicationPreferences"
+            s.server=""
+            s.channel=""
+            s.pageType=""
+            s.prop1=""
+            s.prop2=""
+            s.prop3=""
+            s.prop4=""
+            s.prop5=""
+            /* Conversion Variables */
+            s.campaign=""
+            s.state=""
+            s.zip=""
+            s.events=""
+            s.products=""
+            s.purchaseID=""
+            s.eVar1=""
+            s.eVar2=""
+            s.eVar3=""
+            s.eVar4=""
+            s.eVar5=""
+            var s_code=s.t();if(s_code)document.write(s_code);
+       </script>
+       <div class="overlay"></div>
+      <apex:outputPanel id="Cpref">
+        <div class="middle-col communication-prefer pB10">
+          <div class="middle-title" id="checkindex" tabindex="-1">
+            <p>
+            <apex:commandLink onclick="ovelayPop();" action="{!showpopUpAccOverview}" reRender="Cpref" value="" >
+              <span data-modal-id="overview-box" class="js-open-modal overview-link">Account Overview </span> 
+              <apex:outputPanel id="home">
+                 <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/home.png')}" width="20" height="20" onclick="ovelayPop()">
+                  </apex:image>
+              </apex:outputPanel>
+              </apex:commandLink>
+            </p>
+            <h1>Communication Preferences</h1>
+          </div>
+          <apex:actionStatus onstart="loading(true,'cpLoading')" onstop="loading(false,'cpLoading')" id="cpStatus"/>
+          <div class="waitingSearchDiv overlay-loader" id="cpLoading" style="display:none;"> 
+              <div class="waitingHolder">
+                  <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/loading.gif')}" title="Please Wait" width="32" height="32" />
+              </div>
+          </div>
+          <section>
+          
+    <!-- This section is added newly since this section is specified in Page Spec Docs - Unable to change the communication  -->
+            <apex:outputPanel id="NonEdit" rendered="{!HeaderDisplay}">
+            <div class="perferences-section">
+              <div class="secondary-title secondaryTitleCls">
+                <h3>Unable to Change Communication Preferences</h3>
+              </div>
+              <div class="perfer-email">
+                <p>Your communications preferences cannot be changed due to your account status.
+                 Please contact us if you need assistance.
+
+                <pre>
+                
+                </pre>
+                </p>
+              </div>
+            </div>
+            </apex:outputPanel>
+      <!-- This section is added newly since this section is specified in Page Spec Docs -->
+      
+      <!-- Choose your Communication  -->    
+      <apex:outputPanel id="opMain">    
+            <div class="perferences-section">
+              
+              <!-- DEFECT 114168 Start --> 
+              <apex:outputPanel rendered="{!!headerBooleanVal}">
+                  <div class="secondary-title mB10">
+                    Choose your communication preferences
+                  </div>
+              </apex:outputPanel>
+               <!-- DEFECT 114168 End --> 
+              
+              <div class="perfer-email">
+                   <!-- DEFECT 114168 Start --> 
+                       <apex:outputPanel rendered="{!!headerBooleanVal}">
+                           <p>Enter your email address and/or text below to receive paperless communications.
+                           </p>
+                       </apex:outputPanel>
+                   <!-- DEFECT 114168 End --> 
+                <form id="form1" method="post" class="ta-center">
+                   <div class="form-field">
+                        <label for="bank-name">Email Address:</label>                                          
+                        <div>                    
+                            <apex:inputText value="{!Communication_Preferences__c.Email_Address__c}" onblur="emailPreferences('{!$Component.bankname}');return false;" styleClass="medium-input" id="bankname" html-placeholder="Email Address" rendered="{!NOT(HeaderDisplay)}"/>
+                        </div>                       
+                        <div id="emailErr">* Use format email@domain.com. </div>
+                        <div id="emailErrNull">* Enter an email address. </div>                         
+                        <div>  
+                        <!-- DEFECT 114168 Start -->  
+                        <apex:outputLabel style="text-align: left;" rendered="{!headerBooleanVal}">{!Communication_Preferences__c.Email_Address__c}</apex:outputLabel> 
+                        <!-- DEFECT 114168 End -->                                          
+                        </div>                                   
+                    </div> 
+                    
+                
+                    
+                  <div class="form-field">
+                    <label for="bank-name">Text Number:</label>
+                      <div>
+                      <apex:inputText value="{!Communication_Preferences__c.Text_Number__c}" onblur="textPreferences('{!$Component.bankname1}');return false;" styleClass="medium-input" id="bankname1"  html-placeholder="Text Number" rendered="{!NOT(HeaderDisplay)}"/>
+                      </div>
+                      <div id="textErrNull">* Enter a text number.</div>
+                      <div id="textErr">* Enter a 10-digit text number.</div>
+                      <!-- DEFECT 114168 Start -->  
+                      <apex:outputLabel style="text-align: left;" rendered="{!headerBooleanVal}">{!Communication_Preferences__c.Text_Number__c}</apex:outputLabel> 
+                      <!-- DEFECT 114168 End -->                                          
+                  </div>
+                </form>
+              </div>
+              <!-- Perferences Email End -->
+              <div class="payment-sec">
+                <div class="checkbox-field"><p>Email<span>Text</span></p></div>
+                <ul>
+                  <!-- PAYMENT REMINDERS -->          
+                  <li class="due-date-info" id="payment_reminder">
+                    <div class="remainder-view"><span></span></div>
+                    <div class="payment-content">
+                      <div class="payment-title">
+                        <div class="payment-status">
+                          <div class="inner-title"> 
+                            <h4>Payment Reminders</h4>
+                          </div>
+                        </div>
+                        <div class="t-c-checkbox">
+                          <div class="checkbox-fid">
+                          <apex:outputPanel id="reminders" rendered="{!NOT(HeaderDisplay)}"> 
+                               <apex:inputCheckbox id="reminders1" value="{!Communication_Preferences__c.Payment_Reminders_via_Email__c}" onselect="emailPreferences('{!$Component.bankname}');return false;" onclick="unsubscribeUnchecked();"/> 
+                               <script>
+                               var cb1 = '{!$Component.reminders1}';
+                               </script>
+                          </apex:outputPanel>
+                          <apex:outputField value="{!Communication_Preferences__c.Payment_Reminders_via_Email__c}" rendered="{!HeaderDisplay}"/>
+                            <label for="reminder"></label> 
+                          </div>
+                          <div class="checkbox-fid text-check">
+                            <apex:outputPanel rendered="{!NOT(HeaderDisplay)}">
+                                <apex:inputCheckbox id="reminder2" value="{!Communication_Preferences__c.Payment_Reminders_via_Text__c}" onclick="unsubscribeUnchecked();"/>
+                                <script>
+                                var cb11 = '{!$Component.reminder2}';
+                               </script>
+                            </apex:outputPanel>
+                            <apex:outputField value="{!Communication_Preferences__c.Payment_Reminders_via_Text__c}" rendered="{!HeaderDisplay}"/>
+                            <label for="reminder2"></label> 
+                          </div>
+                        </div>
+                      </div>
+                      <div class="clear"></div>
+                      <div class="due-date">
+                        <div class="select-box-cover">
+                           <!-- DEFECT 114168 Start -->
+                          <apex:outputPanel rendered="{!!headerBooleanVal}">
+                              <span class="fancyArrow"></span> 
+                          </apex:outputPanel>
+                           <!-- DEFECT 114168 End-->
+                          <apex:inputField value="{!Communication_Preferences__c.Days_Prior_Reminder__c}" styleClass="medium-input" style="width:40px;" rendered="{!NOT(HeaderDisplay)}"/>
+                          <apex:outputField value="{!Communication_Preferences__c.Days_Prior_Reminder__c}" styleClass="medium-input" style="width:40px;" rendered="{!HeaderDisplay}" />
+                        </div>
+                        <span> day(s) before due date</span>
+                      </div>
+                      <div class="due-info P-reminder">
+                        <p>Receive a reminder before your payment is due based on the number of days you have selected.</p>
+                      </div>
+                    </div>
+                  </li>
+                  <!-- PAYMENT CONFIRMATION-->           
+                  <li class="due-date-info" id="payment-conf">
+                    <div class="arrow-view remainder-view"><span></span></div>
+                    <div class="payment-content">
+                      <div class="payment-title">
+                        <div class="payment-status">
+                          <div class="inner-title">
+                            <h4>Payment Confirmations</h4>
+                          </div>
+                        </div>
+                        <div class="t-c-checkbox">
+                          <div class="checkbox-fid">
+                            <apex:outputPanel rendered="{!NOT(HeaderDisplay)}"> <apex:inputCheckbox id="confirmation1" value="{!Communication_Preferences__c.Payment_Confirmations_via_Email__c}" onselect="emailPreferences('{!$Component.bankname}');return false;" onclick="unsubscribeUnchecked();" />&nbsp;&nbsp;</apex:outputPanel>
+                            <apex:outputField value="{!Communication_Preferences__c.Payment_Confirmations_via_Email__c}" rendered="{!HeaderDisplay}" />
+                            <label for="confirmation1"></label>
+                            <script>
+                               var cb2 = '{!$Component.confirmation1}';
+                            </script> 
+                          </div>
+                          <div class="checkbox-fid text-check">
+                            <apex:outputPanel rendered="{!NOT(HeaderDisplay)}"><apex:inputCheckbox id="confirmation2" value="{!Communication_Preferences__c.Payment_Confirmations_via_Text__c}" onclick="unsubscribeUnchecked();" /></apex:outputPanel>
+                            <apex:outputField value="{!Communication_Preferences__c.Payment_Confirmations_via_Text__c}" rendered="{!HeaderDisplay}" />
+                            <label for="confirmation2"></label> 
+                            <script>
+                               var cb21 = '{!$Component.confirmation2}';
+                            </script>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="clear"></div>
+                      <div class="due-info P-conf">
+                        <p>Receive a confirmation every time you schedule a payment.</p>
+                      </div>
+                    </div>
+                  </li>
+                  <!-- EASYPAY COMMUNICATIONS -->   
+                  <li class="due-date-info" id="easypay_communication">
+                    <div class="arrow-view remainder-view"><span></span></div>
+                    <div class="payment-content">
+                      <div class="payment-title">
+                        <div class="payment-status">
+                          <div class="inner-title">
+                            <h4>EasyPay Communications</h4>
+                          </div>
+                        </div>
+                        <div class="t-c-checkbox">
+                          <div class="checkbox-fid">
+                            <apex:outputPanel rendered="{!NOT(HeaderDisplay)}"><apex:inputCheckbox id="easypay1" value="{!Communication_Preferences__c.EasyPay_Communications_via_Email__c}" onselect="emailPreferences('{!$Component.bankname}');return false;" onclick="unsubscribeUnchecked();" />&nbsp;&nbsp;</apex:outputPanel>
+                            <apex:outputField value="{!Communication_Preferences__c.EasyPay_Communications_via_Email__c}" rendered="{!HeaderDisplay}"/>
+                            <label for="easypay1"></label> 
+                            <script>
+                               var cb3 = '{!$Component.easypay1}';
+                            </script> 
+                          </div>
+                          <div class="checkbox-fid text-check">
+                            <apex:outputPanel rendered="{!NOT(HeaderDisplay)}"><apex:inputCheckbox id="easypay2" value="{!Communication_Preferences__c.EasyPay_Communications_via_Text__c}" onclick="unsubscribeUnchecked();" /></apex:outputPanel>
+                            <apex:outputField value="{!Communication_Preferences__c.EasyPay_Communications_via_Text__c}" rendered="{!HeaderDisplay}"/>
+                            <label for="easypay2"></label> 
+                            <script>
+                               var cb31 = '{!$Component.easypay2}';
+                            </script>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="clear"></div>
+                      <div class="due-info E-communication">
+                        <p>Receive communications about EasyPay.</p>
+                      </div>
+                    </div>
+                  </li>
+                  <!-- PAPERLESS STATEMENTS AND LETTER -->           
+                  <li class="due-date-info" id="paperless_letter">
+                  <apex:outputPanel >
+                    <div class="arrow-view remainder-view"><span></span></div>
+                    <div class="payment-content">
+                      <div class="payment-title">
+                        <div class="payment-status">
+                          <div class="inner-title">
+                            <h4>Paperless Statements &amp; Letters</h4>
+                          </div>
+                        </div>
+                        <div class="t-c-checkbox">
+                          <div class="checkbox-fid">                                                                            
+                            <apex:outputPanel rendered="{!(HeaderDisplay == false)}">
+                                <apex:inputCheckbox id="paperless1" value="{!Communication_Preferences__c.Paperless_Statements_Letters__c}" onselect="emailPreferences('{!$Component.bankname}');" onclick="unsubscribeUnchecked();"/>&nbsp;&nbsp;
+                            </apex:outputPanel>
+                            
+                            <apex:outputField value="{!Communication_Preferences__c.Paperless_Statements_Letters__c}" rendered="{!HeaderDisplay}"/>
+                            <label for="paperless1"></label> 
+                            <script>
+                               var cb4 = '{!$Component.paperless1}';
+                            </script> 
+                          </div>
+                        </div>
+                      </div>
+                      <div class="clear"></div>
+                      <div class="due-info P-communication">
+                        <p>Receive emails to notify you when your monthly statement and correspondence are available on our secure web site.</p>
+                      </div>
+                    </div>
+                    </apex:outputPanel>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+           <!-- Paperless Statements & Letters End -->
+            
+            <!--Terms and Conditions1 Start -->
+
+
+            <div class="term-condition pT10">
+            <apex:outputPanel id="trm1" rendered="{!AND(Communication_Preferences__c.Email_Address__c == null,Communication_Preferences__c.Text_Number__c == null)}" >
+              
+              <div class="pull-right pT10">
+                <div class="printer-version">
+                  <a href="#" onclick="window.open('apex/PdfTermsandCondCommPref?ishonda={!Honda}')">
+                    <apex:image alt="" url="{!URLFOR($Resource.AFSHFS, 'AfsHfs/images/printer.png')}" width="20" height="20"/>
+                    <span>Printer Friendly Version</span></a>
+                </div>
+              </div>
+              <div class="clear"></div>
+              <div class="secondary-title padding10 pull-left">
+                Terms &amp; Conditions
+              </div>
+              <div class="clear mB10">
+              To continue, read the following, <span class="red-bold">scroll to the bottom</span> and agree to the Terms &amp; Conditions.
+
+              </div>
+              
+              <div class="textarea-text terms-condition" id="TermsCondition">
+              <apex:outputPanel rendered="{!Honda}">
+                <div id='tobePrinted' class="print-pdf-section">
+                    <p class="tc-head">Communication Authorization</p>
+                    <p class="tc-content">I agree that Honda Financial Services[SM] (HFS) can send emails and/or SMS text messages to me regarding my account, including but not limited to the communications I have elected to receive above, at the email address and/or telephone number that I have provided. I expressly consent to HFS using prerecorded/artificial voice messages, text messages and/or automatic dialing equipment when contacting me regarding my account. To stop receiving SMS text messages reply with STOP and you will be unsubscribed from this service, you will receive an additional text message to confirm your cancellation.</p>
+                    <p class="tc-content">HFS does not have a separate charge for text message notification services; however, <b class="font12">message and data rates may apply</b> from your mobile carrier. Subject to the terms and conditions of your mobile carrier, you may be charged for delivery of text messages sent to your mobile phone or device. By providing your consent to SMS text services, you approve any such charges from your mobile carrier. Charges for text messages may appear on your mobile phone bill or be deducted from your prepaid mobile balance.</p>
+                    
+                    
+                </div>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!!Honda}">
+                <div class="print-pdf-section">
+                    <p class="tc-head">Communication Authorization</p>
+                    <p class="tc-content">I agree that Acura Financial Services[SM] (AFS) can send emails and/or SMS text messages to me regarding my account, including but not limited to the communications I have elected to receive above, at the email address and/or telephone number that I have provided. I expressly consent to AFS using prerecorded/artificial voice messages, text messages and/or automatic dialing equipment when contacting me regarding my account. To stop receiving SMS text messages reply with STOP and you will be unsubscribed from this service, you will receive an additional text message to confirm your cancellation.</p>
+                    <p class="tc-content">AFS does not have a separate charge for text message notification services; however, <b class="font12">message and data rates may apply</b> from your mobile carrier. Subject to the terms and conditions of your mobile carrier, you may be charged for delivery of text messages sent to your mobile phone or device. By providing your consent to SMS text services, you approve any such charges from your mobile carrier. Charges for text messages may appear on your mobile phone bill or be deducted from your prepaid mobile balance.</p>
+                    
+                    
+                </div>
+                </apex:outputPanel>
+            </div>
+            
+              <div class="perferences-terms">
+              <div class="t-c-checkbox">
+              <div class="condition-check-box">
+                  <apex:outputPanel rendered="{!NOT(HeaderDisplay)}" ><input id="check1" type="checkbox" name="check" value="{!Communication_Preferences__c.Terms_Condtions_Accepted__c}"/>&nbsp;&nbsp;&nbsp;</apex:outputPanel>
+                  <apex:outputField value="{!Communication_Preferences__c.Terms_Condtions_Accepted__c}" rendered="{!HeaderDisplay}"/>
+                 </div>
+                 <div class="condition-check-text">
+                 <label for="check1">I have read and agree to Terms &amp; Conditions.
+                 </label>
+                 </div>
+              </div>
+                  <div id ="errors"> </div>
+              </div>
+              </apex:outputPanel>
+              <!-- Terms and conditions1 End -->
+              
+              <!-- Terms and conditions2 Start -->
+              
+              <apex:outputPanel id="trm2" rendered="{!NOT(AND(Communication_Preferences__c.Email_Address__c == null,Communication_Preferences__c.Text_Number__c == null))}">
+              <div class="unsubscribe-section">
+              <div class="unsubscribe-field"><div class="remainder-view"><span></span></div>
+              <div class="unsubscribe-text"><h3>Unsubscribe from all</h3></div>
+              <div class="t-c-checkbox">
+              <div class="checkbox-fid">
+                  <apex:outputPanel rendered="{!NOT(HeaderDisplay)}" style="position:relative; padding-left:25px; padding-top:5px; cursor:pointer;">
+                      <apex:inputCheckbox id="unsubscribe" value="{!Communication_Preferences__c.Unsubscribe_from_all__c}" onclick="unsubscribe();" />
+                  </apex:outputPanel>
+                  <apex:outputField value="{!Communication_Preferences__c.Unsubscribe_from_all__c}" rendered="{!HeaderDisplay}"/>
+              <label for="unsubscribe"></label> 
+              </div>
+              </div> 
+              </div>
+              <div class="condition">
+              <p>Your communication preferences have been saved in accordance with the&nbsp;<apex:commandLink value="Terms & Conditions" onclick="window.open('apex/PdfTermsandCondCommPref?ishonda={!Honda}')" reRender="Cpref"/>  for Communication Preferences.
+</p>
+              </div>
+              </div>
+              </apex:outputPanel>
+              <div class="pR10 ta-right pT10">
+              <!-- Below cancel buttons modified by Jayashree --> 
+              <!-- DEFECT 114168 Start -->
+                <apex:commandButton id="cnc" value="Cancel" action="{!showpopUpAccOverview}" onclick="ovelayPop();" reRender="popupCancelId" styleClass="js-open-modal regular-btn btn-2 mR10" rendered="{!NOT(HeaderDisplay)}"/> 
+                <!-- DEFECT 114168 End-->
+                <apex:commandButton value="Cancel" reRender="cnc" styleClass="btn-2 mR10" style="color: #BBBBBC;"  disabled="true" rendered="{!HeaderDisplay}"/>
+           <!--     <apex:outputPanel id="cancel1" rendered="{!cancelBtnDisable == false}">
+                <apex:commandButton id="cnc" value="Cancel" action="{!ValidateCancelBtn}" onclick="ovelayPop();" reRender="Cpref" styleClass="js-open-modal regular-btn btn-2 mR10"/>          
+                </apex:outputPanel>  
+                
+                <apex:outputPanel id="cancel2" rendered="{!cancelBtnDisable == true}">
+                    <apex:commandButton value="Cancel" reRender="cnc" styleClass="btn-2" style="color: #BBBBBC;"  disabled="true"/>
+                </apex:outputPanel> -->
+              
+                <apex:outputPanel rendered="{!$CurrentPage.parameters.isReadOnly == 'false'}">
+                    <apex:commandButton value="Save" reRender="cnc,cancel1,cancel2" onclick="saveMethod('{!$Component.bankname}','{!$Component.bankname1}',this.id);return false;" styleclass="primary-btn btn-2 scroll-top" status="cpStatus" rendered="{!!HeaderDisplay}"/>
+                    <apex:commandButton value="Save" reRender="cnc,cancel1,cancel2" onclick="return false;" styleclass="btn-2" status="cpStatus" disabled="true" style="color: #BBBBBC;" rendered="{!HeaderDisplay}"/>
+                </apex:outputPanel>
+                  
+                <apex:outputPanel rendered="{!$CurrentPage.parameters.isReadOnly == 'true'}">
+                    <apex:commandButton value="Save" reRender="cnc" styleClass="btn-2 scroll-top" style="color: #BBBBBC;"  disabled="{!$CurrentPage.parameters.isReadOnly = 'true'}" status="cpStatus"/>
+                </apex:outputPanel>
+              
+              </div>
+            </div>
+            </apex:outputPanel>
+
+            <!--Terms Condition2 End - action="{!save}" rerender="popup3" -->
+          </section>
+
+
+<!-- Popup begins from here -->
+
+     <!-- Popup1 Start -->
+            
+            
+            <apex:outputPanel id="popupCancelId"> 
+            <apex:outputPanel id="popup-accoverview" style="display:block; top:6%; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;"  layout="block" rendered="{!accOverviewdisplayPopup == true}">
+            <div class="window-size-one" id="delete-pop">
+              <h3>Go to Account Overview?</h3>
+              <div class="pop-up-details">
+                <p class="window-msg">You will now be directed to your Account Overview page. All of the information that you have entered will be lost. Are you sure you want to proceed?
+                </p>
+                  <div class="pop-btn-section">
+                  <!-- DEFECT 114168 Start -->
+                  <label><apex:commandButton styleClass="regular-btn btn-3 js-modal-close close" action="{!hidepopUpaccOverview}" value="No" oncomplete="removeovelayPop();" id="clickmepfno1" rerender="popupCancelId"/></label>
+                  <!-- DEFECT 114168 End -->
+                  <label><apex:commandButton styleClass="primary-btn btn-3" value="Yes" onclick="{window.top.location={!$Label.AccountOverviewURL}; return false;}" rendered="{!honda}"/>
+                  <apex:commandbutton styleclass="primary-btn btn-3" value="Yes" onclick="{window.top.location={!$Label.Accura_Account_Overview_URL}; return false;}" rendered="{!!honda}"/></label>
+                 </div> 
+              </div>
+            </div>
+            </apex:outputPanel>
+            </apex:outputPanel>
+
+            <!-- End of Popup--> 
+
+     <!-- Popup2 Start -->
+             
+        <apex:outputPanel id="popup3" style="display:block; top:35%; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;"  layout="block">
+            <apex:outputPanel rendered="{!closePopup}"><div class="window-size-one" id="saved-box" >
+                  <h3>Preferences Saved</h3>
+                     <div class="pop-up-details">
+                     <br></br>
+                      <p class="window-msg">Your Communication preferences have been successfully saved.</p>
+                       <div class="pop-btn-section">
+                       
+                           <!-- DEFECT 114168 Start --> 
+                           <apex:commandButton value="Ok" action="{!hidePopup}" oncomplete="disableCheckbox();" styleClass="primary-btn js-modal-close btn-3" reRender="popup3" />
+                           <!-- DEFECT 114168 End --> 
+                       </div>
+                    </div>
+           </div></apex:outputPanel>
+       </apex:outputPanel>
+
+          <!-- Pop up2 End -->
+          
+          <!-- Popup3 Start -->
+          
+          <apex:outputPanel id="Cancel-accoverview" style="display:block;top:35%; margin:0 auto; position:absolute; right:0; left:0;border:0; outline:none; border-radius:4px; cursor:pointer;"  layout="block" >
+            <apex:outputPanel rendered="{!canceldisplayPopup}">
+            <div class="window-size-one" id="Cancel-pop">
+              <h3>Changes Not Saved</h3>
+              <div class="pop-up-details">
+                <br></br>
+                <p class="window-msg">Your changes cannot be saved.
+                </p>
+                  <div class="pop-btn-section">
+                   <!-- DEFECT 114168 Start --> 
+                  <apex:commandButton value="Ok" action="{!hideCancelPopup}" styleClass="primary-btn js-modal-close btn-3" style="display:block;bottom:0; margin:0 auto; right:0;left:0;border: 0;outline: none; border-radius:4px; box-shadow:inset -2px -3px 3px 0px rgba(50, 50, 50, 0.75); cursor:pointer;" rerender="Cancel-accoverview" oncomplete="removeovelayPop();disableCheckbox();"/>
+                   <!-- DEFECT 114168 End--> 
+                  </div> 
+              </div>
+            </div> </apex:outputPanel>
+            </apex:outputPanel>
+          
+          <!-- Popup3 End -->
+          
+          
+          <!-- Bank Account Terms and condition --------------------- -->
+          
+            <div id='Termstobeprinted'>
+            <apex:outputPanel id="TermsCondition" style="display:none">
+            <div>
+  
+            <div class="print-pdf-section">
+            <apex:outputPanel rendered="{!Honda}">
+                <p class="tc-head">COMMUNICATION AUTHORIZATION</p>
+                <p class="tc-content">I agree that Acura Financial Services[SM] (AFS) can send emails and/or SMS text messages to me</p>
+                <p class="tc-content">regarding my account, including but not limited to the communications I have elected to receive</p>
+                <p class="tc-content">above, at the email address and/or telephone number that I have provided. I expressly consent to</p>
+                <p class="tc-content">AFS using prerecorded/artificial voice messages, text messages and/or automatic dialing equipment</p>
+                <p class="tc-content">when contacting me regarding my account. To stop receiving SMS text messages reply with STOP</p>
+                <p class="tc-content">and you will be unsubscribed from this service, you will receive an additional text message to confirm your cancellation.</p>
+                </apex:outputPanel>
+            </div>
+            
+            
+            <div class="print-pdf-section">
+            <apex:outputPanel rendered="{!Not(Honda)}">
+                <p class="tc-head">COMMUNICATION AUTHORIZATION</p>
+                <p class="tc-content">I agree that Acura Financial Services[SM] (AFS) can send emails and/or SMS text messages to me</p>
+                <p class="tc-content">regarding my account, including but not limited to the communications I have elected to receive</p>
+                <p class="tc-content">above, at the email address and/or telephone number that I have provided. I expressly consent to</p>
+                <p class="tc-content">AFS using prerecorded/artificial voice messages, text messages and/or automatic dialing equipment</p>
+                <p class="tc-content">when contacting me regarding my account. To stop receiving SMS text messages reply with STOP </p>
+                <p class="tc-content">and you will be unsubscribed from this service, you will receive an additional text message to confirm your cancellation.</p>
+                </apex:outputPanel>
+            </div>
+        </div>
+        
+       </apex:outputPanel>     
+       </div>     
+          
+          <!-- -------------------End of Terms and Conditions ----------------- -->
+
+        </div>
+        </apex:outputPanel>
+  
+    <apex:includescript value="{!$Resource.placeholder}" />  
+  <script type="text/javascript">
+      $(document).ready(function () {
+      //checkbox
+      $('#check1').prop('checked', false);
+      $("#check1").prop("disabled", true);
+    
+        $("#TermsCondition").scroll(function () {
+            //the room for scrolling is 30px in the textarea
+            //console.log( $("#TermsCondition").scrollTop());
+            //Modified the pixels to 80 from 40 as part of the regression test : 114198
+            if ($("#TermsCondition").scrollTop() > 80) {
+                //$('#check1').prop('checked', true);
+                $("#check1").prop("disabled", false);
+            } else {
+                //$('#check1').prop('checked', false);
+               // $("#check1").prop("disabled", true);
+            }
+        });
+        
+    });
+  </script>
+  
+  <script>
+  
+    function ovelayPop(){
+        var pj = jQuery.noConflict();    
+        pj(document).ready(function() {
+        pj('.overlay').addClass('overlay-layer');
+         });
+    }  
+    
+    function removeovelayPop(){
+        var pj = jQuery.noConflict();    
+        pj(document).ready(function() {
+        pj('.overlay').removeClass('overlay-layer');
+        });
+    }  
+ 
+    
+      
+  </script>
+  
+
+          <script type="text/javascript">
+   // var pj = jQuery.noConflict();
+    $(document).ready(function () {
+        $('.scroll-top').click(function(){
+        
+        document.getElementById('checkindex').focus();
+      
+        });
+    });
+  </script>
+  
+  <script type="text/javascript"> 
+    function emailPreferences(emailId){
+        var em = document.getElementById(emailId).value; 
+        var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        var em1 = false;
+        var saveCfm = 'Yes';
+        document.getElementById('emailErrNull').style.display = 'none';
+        document.getElementById('emailErr').style.display = 'none';
+        var pmtRem = document.getElementById(cb1).checked;
+        var pmtCfm  = document.getElementById(cb2).checked;
+        var easyPay = document.getElementById(cb3).checked;
+        var pplsStmt = document.getElementById(cb4).checked;
+        //var unsbscrb = document.getElementById(cb5).checked;
+        
+        if(em.length == 0 && (pmtRem == true || pmtCfm == true || easyPay == true || pplsStmt == true))
+        {
+        document.getElementById('emailErrNull').style.display = 'block';
+        em1 = true;
+       saveCfm = 'No';
+        }
+
+        if((em.length>0 && !em.match(filter))){   
+        document.getElementById('emailErr').style.display = 'block';
+        saveCfm = 'No';
+        
+       }
+       return saveCfm;
+    }
+    
+    function textPreferences(textNum){
+        var numbers = /^[-+]?[0-9]+$/;
+        var text = document.getElementById(textNum).value;
+        var textTrimmed = text.trim();
+        var pmtRem = document.getElementById(cb11).checked;
+        var pmtCfm  = document.getElementById(cb21).checked;
+        var easyPay = document.getElementById(cb31).checked;
+        var em1 = false;
+        var saveCfm ='Yes';
+       
+        document.getElementById('textErrNull').style.display = 'none';
+        document.getElementById('textErr').style.display = 'none';
+        
+        if(textTrimmed.length == 0 && (pmtRem == true || pmtCfm == true || easyPay == true))
+        {
+        
+        document.getElementById('textErrNull').style.display = 'block';
+        em1 = true;
+        saveCfm = 'No';
+        }
+         
+       
+      
+       if((textTrimmed.length != 10 && em1 != true && textTrimmed.length !=0) || (textTrimmed.length !=0 && !textTrimmed.match(numbers) && em1 != true ))
+       {
+       document.getElementById('textErr').style.display = 'block';
+       saveCfm = 'No';
+       }
+       return saveCfm;
+    }
+    
+    // Disabling the email related checkbox are not required
+    function unsubscribe(){
+        var unsub = document.getElementById('{!$Component.unsubscribe}').checked; 
+            if(unsub){
+             document.getElementById('{!$Component.reminders1}').checked = false;
+             document.getElementById('{!$Component.reminder2}').checked= false;
+             document.getElementById('{!$Component.confirmation1}').checked= false;
+             document.getElementById('{!$Component.confirmation2}').checked= false;
+             document.getElementById('{!$Component.easypay1}').checked= false;
+             document.getElementById('{!$Component.easypay2}').checked= false;
+             document.getElementById('{!$Component.paperless1}').checked= false;
+             }
+             if(!unsub){
+             document.getElementById('{!$Component.reminders1}').disabled = false;
+             document.getElementById('{!$Component.reminder2}').disabled= false;
+             document.getElementById('{!$Component.confirmation1}').disabled= false;
+             document.getElementById('{!$Component.confirmation2}').disabled= false;
+             document.getElementById('{!$Component.easypay1}').disabled= false;
+             document.getElementById('{!$Component.easypay2}').disabled= false;
+             document.getElementById('{!$Component.paperless1}').disabled= false;
+             
+             }
+    }
+    function unsubscribeUnchecked(){
+        
+        textPreferences('{!$Component.bankname1}');
+        
+        if(document.getElementById('{!$Component.reminders1}').checked == true
+            || document.getElementById('{!$Component.reminder2}').checked == true
+            || document.getElementById('{!$Component.confirmation1}').checked == true
+            || document.getElementById('{!$Component.confirmation2}').checked == true
+            || document.getElementById('{!$Component.easypay1}').checked == true
+            || document.getElementById('{!$Component.easypay2}').checked == true
+            || document.getElementById('{!$Component.paperless1}').checked == true
+        )
+        {
+        document.getElementById('{!$Component.unsubscribe}').checked = false;
+        }
+    }
+      
+    function saveMethod(emailId,textId,btnId){
+          var em = document.getElementById(emailId).value;
+          var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+          var r = document.getElementById('reminders1');
+          var c = document.getElementById('confirmation1');
+          var e = document.getElementById('easypay1');
+          var p = document.getElementById('paperless1');
+          var tc = document.getElementById('check1');
+          var text = document.getElementById(textId).value;
+          
+          var callActFn = 'Yes';
+          var callActFnText = 'Yes';
+          
+          callActFnText = textPreferences(textId); 
+          callActFn = emailPreferences(emailId);                 
+          
+          //Removing the old condition and adding new condition for the defect #114198
+          if(tc){
+              if(!(tc.checked)){   
+                  document.getElementById('check1').style.outline= "1px solid #ff0000";
+                  document.getElementById('errors').innerHTML="* You must agree to the Terms and Conditions to continue.";
+                  document.getElementById('errors').style.color = "red";
+                  document.getElementById('errors').style.font = "14px arial";
+                  callActFn = 'No';
+              }
+              else{
+                  document.getElementById('errors').innerHTML=" ";
+                  document.getElementById('check1').style.outline= "";
+              }
+          }          
+          if(em.length >0 && !em.match(filter)){   
+              document.getElementById('emailErr').style.display = 'block';
+              callActFn = 'No';
+          }else{
+              document.getElementById('emailErr').style.display = 'none';
+          }
+
+          if(callActFn == 'Yes' && callActFnText == 'Yes'){
+          //Jayashree added this for defect #113982
+              var v = document.getElementById(btnId).disabled = true;
+              document.getElementById(btnId).style.background= '#ccc';
+              actFunction();             
+          }     
+                    
+      }
+      
+      
+     function showdrawerpopup(){
+
+        var drawer = '{!$Component.RPtype}';
+        var d = document.getElementById(drawer).value;
+        //alert(d);
+        if(d != null && d.length != 0){
+        showdrawerPF();
+         }
+      }
+            
+     function hidePFdrawer1(){
+            var outputPanelId = '{!$Component.PFDrawer}';
+            document.getElementById(outputPanelId).style.display = 'none';
+            hidedrawPF1();
+            return false;
+            }
+            
+     function hidePFdrawer2(){
+            var outputPanelId = '{!$Component.PFDrawer}';
+            document.getElementById(outputPanelId).style.display = 'none';
+            hidedrawPF2();
+            return false;
+            }  
+          
+      function disableCheckbox(){
+      
+       if({!disablePaperStatements}){
+       
+                document.getElementById(cb4).disabled = 'disabled';
+                document.getElementById(cb4).title= 'Option not available for this account';
+            }      
+      }
+      
+      var previousOnload = window.onload;
+       window.onload = function() { 
+              if (previousOnload) 
+                  { 
+                      previousOnload(); 
+                  }
+                  disableCheckbox();
+               }     
+      
+
+     function closePopUp(){
+          document.getElementById('popup3').style.display = 'none';
+      }
+      
+      
+     //  $(document).ready(function() {
+      //  document.getElementById('emailErr').style.display = 'none';
+       // document.getElementById('emailErrNull').style.display = 'none';
+       // document.getElementById('textErrNull').style.display = 'none';
+       // document.getElementById('textErr').style.display = 'none';
+   // });
+    $(document).ready(function(){
+       // saveMethod('{!$Component.j_id0.j_id5.j_id7.bankname}');
+     $("#payment_reminder .remainder-view").click(function() { 
+        if ( $("#payment_reminder.due-date-info .due-info").is(":visible") ) { 
+        $(".due-date-info .due-info.P-reminder").slideUp(); 
+        $('#payment_reminder .remainder-view').removeClass('active');
+        }
+     else  { 
+        $(this).addClass('active');
+        $(".due-date-info .due-info.P-reminder").slideDown(); 
+    }
+    });
+    $("#payment-conf .remainder-view").click(function() { 
+     if ( $("#payment-conf.due-date-info .due-info").is(":visible") ) { 
+        $(".due-date-info .due-info.P-conf").slideUp(); 
+        $('#payment-conf .remainder-view').removeClass('active');
+        }
+        else{
+        $(this).addClass('active');
+        $(".due-date-info .due-info.P-conf").slideDown(); 
+        }
+     });
+     $("#easypay_communication .remainder-view").click(function() { 
+     if ( $("#easypay_communication.due-date-info .due-info").is(":visible") ) { 
+        $(".due-date-info .due-info.E-communication").slideUp(); 
+        $('#easypay_communication .remainder-view').removeClass('active');
+        }
+        else {
+        $(this).addClass('active');
+        $(".due-date-info .due-info.E-communication").slideDown(); 
+        }
+     });
+    $("#paperless_letter .remainder-view").click(function() { 
+     if ( $("#paperless_letter.due-date-info .due-info").is(":visible") ) { 
+        $(".due-date-info .due-info.P-communication").slideUp(); 
+        $('#paperless_letter .remainder-view').removeClass('active');
+        }
+        else {
+        $(this).addClass('active');
+        $(".due-date-info .due-info.P-communication").slideDown(); 
+        }
+     });
+
+
+    }); 
+      
+ $(function() {
+      // Invoke the plugin
+     
+    $('input, textarea').placeholder({customClass:'my-placeholder'});
+   
+    });
+    
+   
+    
+    </script>
+    
+    
+    
+ 
+      </body>
+     </html>
+    </apex:pageBlock>
+  </apex:form>
+</apex:page>
